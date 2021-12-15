@@ -81,6 +81,7 @@ int number_of_lines(char *file_name) {
 
 int main(int argc, char *argv[]) {
     char *x[] = { 0 };
+    // koment
 
     // read_file(x, argv[1]);
 
