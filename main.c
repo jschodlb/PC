@@ -35,29 +35,22 @@ int get_index(int x, int y, int width) {
 
 uchar get_lowest_notblack_value(uchar *array, int n) {
     // index of the lowest value
-    int lowest;
+    // 255 should be the highest possible unsigned char
+    int lowest = 255;
     int i;
 
-    // first not black pixel
-    for (i = 0; i < n; i++) {
-        if (array != 0) {
-            lowest = i;
-            break;
-        }
-    }
-
     // from lowest to the end of array
-    for (i = lowest; i < n; i++) {
+    for (i = 0; i < n; i++) {
+        printf("lowest fce: %d\n", array[i]);
         if (array[i] != 0){
-            if (array[i] < array[lowest]) {
-                lowest = i;
-                printf("index: %d\n", i);
+            if (array[i] < lowest) {
+                lowest = array[i];
             }
         }
     }
 
     printf("lowest: %d\n", array[lowest]);
-    return array[lowest];
+    return lowest;
 }
 
 int is_all_black(uchar *array, int n) {
