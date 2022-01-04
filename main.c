@@ -2,32 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define uchar unsigned char
-
-typedef struct thenode {
-    int value;
-    struct thenode *next;
-    struct thenode *equivalence;
-} node;
-
-node *head = NULL;  // Adresa začátku
-
-//      Dvě * v deklaraci = pointer na pointer             Dvě * jinde = Dereference
-//                    Adresa Adresy Začátku, aby se to měnilo globálně a ne jen lokálně
-int add_node(node **list, uchar value) {
-    node *temp = malloc(sizeof(node)); // Dej mi pamět pro struct node a vrať mi na ní ukazatel
-
-    if (!temp) return 0; // Pokud je temp null, aneb mallocu došla pamět
-
-    temp->value = value;
-
-    temp->next = *list;  // Vložíme list na začátek, aby na něj ukazoval head
-
-    *list = temp; // Head teď bude ukazovat na nový list, nový list bude první v zásobníku
-
-    printf("Adding %d ...\n", temp->value);
-    return 1;
-}
+#include "linked_list.h"
 
 int get_index(int x, int y, int width) {
     return y * width + x;
@@ -70,7 +45,7 @@ int is_all_black(uchar *array, int n) {
 uchar first_pixel_value(uchar *mask, int x, int y, int width) {
     int n = 2;
     uchar output;
-    uchar *array = malloc(n * sizeof(uchar));
+    uchar *array = (uchar *) malloc(n * sizeof(uchar));
 
     // assign every neighboring pixel that we have to examine
     // up right
@@ -93,7 +68,7 @@ uchar first_pixel_value(uchar *mask, int x, int y, int width) {
 int middle_pixel_value(uchar *mask, int x, int y, int width) {
     int n = 4;
     int output;
-    uchar *array = malloc(n * sizeof(uchar));
+    uchar *array = (uchar *) malloc(n * sizeof(uchar));
 
     // assign every neighboring pixel that we have to examine
     // left
@@ -119,7 +94,7 @@ int middle_pixel_value(uchar *mask, int x, int y, int width) {
 
 int last_pixel_value(uchar *mask, int x, int y, int width) {
     int n = 3;
-    uchar *array = malloc(n * sizeof(uchar));
+    uchar *array = (uchar *) malloc(n * sizeof(uchar));
     int output;
 
     // assign every neighboring pixel that we have to examine
@@ -151,6 +126,7 @@ int main(int argc, char *argv[]) {
     node n;
     int value;
     int label;
+    node *head = NULL;
 
     strcpy(file_name, "..\\tests\\");
     strcat(file_name, argv[1]);
