@@ -5,28 +5,29 @@
 
 /* Given a reference (pointer to pointer) to the head
    of a list and an int, appends a new node at the end  */
-int add_node(node** head, int new_data) {
+int add_node(node** head, uchar *value) {
     /* used for the last node */
     node *last;
     /* new node added to the end of the list */
     node *new_node;
     
     /* sanity check for head reference */
-    if (!head || !*head) {
-        printf("Head reference in add_node is NULL.");
+    if (!head) {
+        printf("Head reference in add_node is NULL.\n");
         return FAILURE;
     }
 
     /* allocate memory for the new node */
     new_node = (node *) malloc(sizeof(node));
-    /* if malloc failes */
+    /* if malloc fails */
     if (!new_node) {
-        printf("Malloc failed in add_node.");
+        printf("Malloc failed in add_node.\n");
         return FAILURE;
     }
 
     /* Putting data in the new node  */
-    new_node->value  = new_data;
+    *value = *value + 1;
+    new_node->value  = *value;
     /* node pointers set to NULL for now */
     new_node->next = NULL;
     new_node->equivalence = NULL;
@@ -35,6 +36,7 @@ int add_node(node** head, int new_data) {
     /* if the linked list is empty, we assign new node to head */
     if (*head == NULL) {
         *head = new_node;
+
         return SUCCESS;
     }
 
@@ -55,8 +57,32 @@ int add_equivalence(node *added_to, node *equivalence) {
 
     /* sanity check */
     if (!added_to || !equivalence) {
-        printf("Failed sanity check in add_equivalence.");
+        printf("Failed sanity check in add_equivalence.\n");
         return FAILURE;
+    }
+
+    /* check if there is already this equivalence */
+    /* checking added_to */
+    if (equivalence->value == added_to->value) {
+        return SUCCESS;
+    }
+
+    /* checking to the left */
+    walk = added_to;
+    while (walk->prev_equivalence != NULL) {
+        walk = walk->prev_equivalence;
+        if (walk->value == equivalence->value) {
+            return SUCCESS;
+        }
+    }
+
+    /* checking to the right */
+    walk = added_to;
+    while (walk->equivalence != NULL) {
+        walk = walk->equivalence;
+        if (walk->value == equivalence->value) {
+            return SUCCESS;
+        }
     }
 
     /* when there is no equivalence for added_to node */
@@ -83,13 +109,13 @@ int add_equivalence(node *added_to, node *equivalence) {
     }
 }
 
-int get_equivalence(node *examined_node) {
-    int min;
+uchar get_equivalence(node *examined_node) {
+    uchar min;
     node *walk;
 
     /* sanity check */
     if (!examined_node) {
-        printf("Failed sanity check in get_equivalence.");
+        printf("Failed sanity check in get_equivalence.\n");
         return FAILURE;
     }
 
@@ -121,9 +147,10 @@ int get_equivalence(node *examined_node) {
 }
 
 int print_node(node *printed) {
+
     /* Sanity check */
     if (!printed) {
-        printf("Sanity check failed in print_node.");
+        printf("Sanity check failed in print_node.\n");
         return FAILURE;
     }
 
@@ -136,7 +163,7 @@ int print_list(node *head) {
 
     /* Sanity check */
     if (!head) {
-        printf("Sanity check failed in print_list.");
+        printf("Sanity check failed in print_list.\n");
         return FAILURE;
     }
 
@@ -144,6 +171,50 @@ int print_list(node *head) {
     while (walk != NULL) {
         print_node(walk);
         walk = walk->next;
+    }
+
+    return SUCCESS;
+}
+
+node *get_node(node *head, uchar value) {
+    node* walk;
+
+    /* Sanity check */
+    if (!head) {
+        printf("Sanity check failed in get_node. List may be empty.\n");
+        return NULL;
+    }
+
+    walk = head;
+    while (walk != NULL) {
+        if (walk->value == value) {
+            return walk;
+        }
+        walk = walk->next;
+    }
+
+    return NULL;
+}
+
+int free_list(node *head) {
+    /* goes through list */
+    node *walk;
+    /* help variable for free */
+    node *temp;
+
+    /* Sanity check */
+    if (!head) {
+        printf("Sanity check failed in free_list.\n");
+        return FAILURE;
+    }
+
+    /* going through the list */
+    walk = head;
+    while (walk) {
+        temp = walk;
+        walk = walk->next;
+        /* freeing nodes */
+        free(temp);
     }
 
     return SUCCESS;

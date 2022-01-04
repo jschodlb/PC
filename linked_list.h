@@ -13,14 +13,18 @@ typedef struct thenode {
     struct thenode *prev_equivalence;
 } node;
 
-int add_node(node** head_ref, int new_data);
+int add_node(node** head, uchar *value);
 
 int add_equivalence(node *added_to, node *equivalence);
 
-int get_equivalence(node *examined_node);
+uchar get_equivalence(node *examined_node);
 
 int print_node(node *printed);
 
 int print_list(node *head);
+
+node *get_node(node *head, uchar value);
+
+int free_list(node *head);
 
 #endif

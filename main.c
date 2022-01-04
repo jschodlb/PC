@@ -8,15 +8,14 @@ int get_index(int x, int y, int width) {
     return y * width + x;
 }
 
-uchar get_lowest_notblack_value(uchar *array, int n) {
+uchar get_lowest_not_black_value(uchar *array, int n) {
     // index of the lowest value
     // 255 should be the highest possible unsigned char
-    int lowest = 255;
+    uchar lowest = 255;
     int i;
 
     // from lowest to the end of array
     for (i = 0; i < n; i++) {
-        printf("lowest fce: %d\n", array[i]);
         if (array[i] != 0){
             if (array[i] < lowest) {
                 lowest = array[i];
@@ -24,8 +23,27 @@ uchar get_lowest_notblack_value(uchar *array, int n) {
         }
     }
 
-    printf("lowest: %d\n", array[lowest]);
     return lowest;
+}
+
+uchar get_highest(uchar *array, int n) {
+    uchar highest;
+    int i;
+
+    if (!array) {
+        printf("Sanity check failed in get_highest.\n");
+        return FAILURE;
+    }
+
+    highest = array[0];
+
+    for (i = 1; i < n; i++) {
+        if (array[i] > highest) {
+            highest = array[i];
+        }
+    }
+
+    return highest;
 }
 
 int is_all_black(uchar *array, int n) {
@@ -42,7 +60,7 @@ int is_all_black(uchar *array, int n) {
     return 1;
 }
 
-uchar first_pixel_value(uchar *mask, int x, int y, int width) {
+uchar first_pixel_value(uchar *mask, int x, int y, int width, node **head, uchar *value) {
     int n = 2;
     uchar output;
     uchar *array = (uchar *) malloc(n * sizeof(uchar));
@@ -57,7 +75,15 @@ uchar first_pixel_value(uchar *mask, int x, int y, int width) {
     if (is_all_black(array, n)) {
         output = 0;
     } else {
-        output = get_lowest_notblack_value(array, n);
+        output = get_lowest_not_black_value(array, n);
+    }
+
+    if (output == 0) {
+        add_node(head, value);
+        mask[get_index(x, y, width)] = *value;
+    } else {
+        mask[get_index(x, y, width)] = output;
+        add_equivalence(get_node(*head, output), get_node(*head, get_highest(array, n)));
     }
 
     free(array);
@@ -65,7 +91,7 @@ uchar first_pixel_value(uchar *mask, int x, int y, int width) {
     return output;
 }
 
-int middle_pixel_value(uchar *mask, int x, int y, int width) {
+int middle_pixel_value(uchar *mask, int x, int y, int width, node **head, uchar *value) {
     int n = 4;
     int output;
     uchar *array = (uchar *) malloc(n * sizeof(uchar));
@@ -84,7 +110,15 @@ int middle_pixel_value(uchar *mask, int x, int y, int width) {
     if (is_all_black(array, n)) {
         output = 0;
     } else {
-        output = get_lowest_notblack_value(array, n);
+        output = get_lowest_not_black_value(array, n);
+    }
+
+    if (output == 0) {
+        add_node(head, value);
+        mask[get_index(x, y, width)] = *value;
+    } else {
+        mask[get_index(x, y, width)] = output;
+        add_equivalence(get_node(*head, output), get_node(*head, get_highest(array, n)));
     }
 
     free(array);
@@ -92,10 +126,10 @@ int middle_pixel_value(uchar *mask, int x, int y, int width) {
     return output;
 }
 
-int last_pixel_value(uchar *mask, int x, int y, int width) {
+int last_pixel_value(uchar *mask, int x, int y, int width, node **head, uchar *value) {
     int n = 3;
-    uchar *array = (uchar *) malloc(n * sizeof(uchar));
     int output;
+    uchar *array = (uchar *) malloc(n * sizeof(uchar));
 
     // assign every neighboring pixel that we have to examine
     array[0] = mask[get_index(x-1, y, width)];
@@ -106,12 +140,47 @@ int last_pixel_value(uchar *mask, int x, int y, int width) {
     if (is_all_black(array, n)) {
         output = 0;
     } else {
-        output = get_lowest_notblack_value(array, n);
+        output = get_lowest_not_black_value(array, n);
+    }
+
+    if (output == 0) {
+        add_node(head, value);
+        mask[get_index(x, y, width)] = *value;
+    } else {
+        mask[get_index(x, y, width)] = output;
+        add_equivalence(get_node(*head, output), get_node(*head, get_highest(array, n)));
     }
 
     free(array);
 
     return output;
+}
+
+int fix_mask(uchar *mask, node *head, int width, int height) {
+    int i;
+    int j;
+
+    /* Sanity check */
+    if (!mask) {
+        printf("Failed sanity check for mask in fix_mask.\n");
+        return 0;
+    }
+
+    if (!head) {
+        printf("Failed sanity check for head in fix_mask.\n");
+        return 0;
+    }
+
+    for (i = 0; i < height; i++) {
+        for (j = 0; j < width; j++) {
+            if (mask[get_index(j, i, width)]) {
+                mask[get_index(j, i, width)] = get_equivalence(get_node(head, mask[get_index(j, i, width)]));
+            }
+        }
+    }
+
+
+    return SUCCESS;
 }
 
 int main(int argc, char *argv[]) {
@@ -123,10 +192,16 @@ int main(int argc, char *argv[]) {
     uchar pixel;
     uchar *pixels;
     uchar *mask;
-    node n;
-    int value;
-    int label;
+    uchar *value;
     node *head = NULL;
+
+    value = (uchar *) malloc(sizeof(uchar));
+
+    /* sanity check */
+    if (!value) {
+        printf("Malloc for uchar failed.\n");
+        return EXIT_FAILURE;
+    }
 
     strcpy(file_name, "..\\tests\\");
     strcat(file_name, argv[1]);
@@ -176,24 +251,23 @@ int main(int argc, char *argv[]) {
         printf("\n");
     }
 
-    value = 0;
-    // first line of the mask
+    *value = 0;
     // for the first pixel we only compare if it is white or black
     // if white we assign a new value, we ignore if black, because it stays 0
     // if pixel is not black
     if (pixels[0] != 0) {
-        value++;
-        mask[0] = value;
         add_node(&head, value);
+        mask[0] = *value;
     }
+
+
 
     // first line
     for (j = 1; j < width; j++) {
         if (pixels[j] != 0) {
             if (mask[j-1] == 0) {
-                value++;
-                mask[j] = value;
                 add_node(&head, value);
+                mask[j] = *value;
             } else {
                 mask[j] = mask[j-1];
             }
@@ -205,44 +279,23 @@ int main(int argc, char *argv[]) {
     for (i = 1; i < height; i++) {
         // for the first pixel in line we do not have to check left neighbor, because there is nothing
         if (pixels[get_index(0, i, width)] != 0) {
-            label = first_pixel_value(mask, 0, i, width);
-            if (label == 0) {
-                value++;
-                mask[get_index(0, i, width)] = value;
-                add_node(&head, value);
-            } else {
-                mask[get_index(0, i, width)] = label;
-            }
+            first_pixel_value(mask, 0, i, width, &head, value);
         }
 
         // middle pixels
         for (j = 1; j < width - 1; j++) {
             if (pixels[get_index(j, i, width)] != 0) {
-                label = middle_pixel_value(mask, j, i, width);
-                if (label == 0) {
-                    value++;
-                    mask[get_index(j, i, width)] = value;
-                    add_node(&head, value);
-                } else {
-                    mask[get_index(j, i, width)] = label;
-                }
+                middle_pixel_value(mask, j, i, width, &head, value);
             }
         }
 
         // last pixels
         if (pixels[get_index(width-1, i, width)] != 0) {
-            label = last_pixel_value(mask, width-1, i, width);
-            if (label == 0) {
-                value++;
-                mask[get_index(width-1, i, width)] = value;
-                add_node(&head, value);
-            } else {
-                mask[get_index(width-1, i, width)] = label;
-            }
+            last_pixel_value(mask, width-1, i, width, &head, value);
         }
     }
 
-    printf("Mask:\n");
+    printf("\nMask after first walk-through:\n");
     for (i = 0; i < height; i++) {
         for (j = 0; j < width; j++) {
             printf("%*d", 3, mask[get_index(j, i, width)]);
@@ -250,8 +303,39 @@ int main(int argc, char *argv[]) {
         printf("\n");
     }
 
+    fix_mask(mask, head, width, height);
+
+    printf("\nMask after second walk-through:\n");
+    for (i = 0; i < height; i++) {
+        for (j = 0; j < width; j++) {
+            printf("%*d", 3, mask[get_index(j, i, width)]);
+        }
+        printf("\n");
+    }
+
+    file = fopen(argv[2], "w+");
+
+    if (!file) {
+        printf("Fopen failed :(\n");
+        return EXIT_FAILURE;
+    }
+
+    fprintf(file, "%s\n", magic_number);
+    fprintf(file, "%d %d\n", width, height);
+    fprintf(file, "%d\n", max_value);
+
+    for (i = 0; i < height; i++) {
+        for (j = 0; j < width; j++) {
+            fprintf(file, "%c", mask[get_index(j, i, width)]);
+        }
+    }
+
+    fclose(file);
+
     free(pixels);
     free(mask);
+    free(value);
+    free_list(head);
 
     return EXIT_SUCCESS;
 }
