@@ -52,49 +52,49 @@ int add_node(node** head, int *value) {
     return SUCCESS;
 }
 
-int add_equivalence(node *added_to, node *new_equivalence) {
-    node *last_added;
-    node *first_equivalence;
-    node *walk;
-    node *walk_e;
+int add_equivalence(node *node1, node *node2) {
+    node *last_node1;
+    node *first_node2;
+    node *walk1;
+    node *walk2;
 
     /* Sanity check */
-    if (!added_to || !new_equivalence) {
+    if (!node1 || !node2) {
         printf("Sanity check failed in add_equivalence.\n");
         return FAILURE;
     }
 
     /* get to the end of added_to equivalence list */
-    last_added = added_to;
-    while (last_added->equivalence) {
-        last_added = last_added->equivalence;
+    last_node1 = node1;
+    while (last_node1->equivalence) {
+        last_node1 = last_node1->equivalence;
     }
 
     /* get to the beginning of new_equivalence equivalence list */
-    first_equivalence = new_equivalence;
-    while (first_equivalence->prev_equivalence) {
-        first_equivalence = first_equivalence->prev_equivalence;
+    first_node2 = node2;
+    while (first_node2->prev_equivalence) {
+        first_node2 = first_node2->prev_equivalence;
     }
 
 
     /* check for duplicates */
-    walk_e = first_equivalence;
-    while (walk_e) {
-        walk = last_added;
-        while (walk) {
-            if (walk->value == walk_e->value) {
+    walk2 = first_node2;
+    while (walk2) {
+        walk1 = last_node1;
+        while (walk1) {
+            if (walk1->value == walk2->value) {
                 return SUCCESS;
             }
-            walk = walk->prev_equivalence;
+            walk1 = walk1->prev_equivalence;
         }
-        walk_e = walk_e->equivalence;
+        walk2 = walk2->equivalence;
     }
 
     /* adding equivalence
        added_to->new_equivalence
        added_to<-new_equivalence */
-    last_added->equivalence = first_equivalence;
-    first_equivalence->prev_equivalence = last_added;
+    last_node1->equivalence = first_node2;
+    first_node2->prev_equivalence = last_node1;
 
     return SUCCESS;
 }
@@ -255,6 +255,33 @@ int get_equivalence(node *examined_node) {
 }
 
 int print_node(node *printed) {
+    node *walk;
+
+    /* Sanity check */
+    if (!printed) {
+        printf("Sanity check failed in print_node.\n");
+        return FAILURE;
+    }
+
+    printf("Value: %d\n", printed->value);
+
+    walk = printed;
+    while (walk->prev_equivalence) {
+        walk = walk->prev_equivalence;
+    }
+
+    printf("Equivalence:");
+    while (walk) {
+        printf(" %d", walk->value);
+        walk = walk->equivalence;
+    }
+
+    printf("\n");
+
+    return SUCCESS;
+}
+
+int print_node_deprecated(node *printed) {
     node *walk;
 
     /* Sanity check */
