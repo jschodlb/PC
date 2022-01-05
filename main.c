@@ -372,15 +372,15 @@ int main(int argc, char *argv[]) {
     fix_mask(mask, head, width, height);
     printf("Value = %d\n", *value);
 
-    /*
+
     printf("\nMask after second walk-through:\n");
-    for (i = 0; i < height; i++) {
-        for (j = 0; j < width; j++) {
+    for (i = 6; i < 79; i++) {
+        for (j = 9; j < 45; j++) {
             printf("%*d", 3, mask[get_index(j, i, width)]);
         }
         printf("\n");
     }
-    */
+
 
 
     strcpy(file_name, "..\\tests\\");
@@ -392,9 +392,7 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-
     paint_mask(mask, width, height);
-    printf("%d %d\n", mask[0], mask[1]);
 
     fprintf(file, "%s\r", magic_number);
     fprintf(file, "%u %u\r", width, height);
@@ -403,10 +401,15 @@ int main(int argc, char *argv[]) {
     printf("\nMask after paint walk-through:\n");
     for (i = 0; i < height; i++) {
         for (j = 0; j < width; j++) {
-            //printf("%*d", 4, mask[get_index(j, i, width)]);
             fprintf(file, "%c", mask[get_index(j, i, width)]);
         }
-        //printf("\n");
+    }
+
+    for (i = 6; i < 79; i++) {
+        for (j = 9; j < 45; j++) {
+            printf("%*d", 3, mask[get_index(j, i, width)]);
+        }
+        printf("\n");
     }
 
     fclose(file);

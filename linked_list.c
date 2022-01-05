@@ -69,13 +69,15 @@ int add_equivalence(node *added_to, node *new_equivalence) {
 
     if (added_to->value == 1) {
         if (new_equivalence->value == 7) {
-            printf("###############################################");
+            print_node(added_to);
+            print_node(new_equivalence);
         }
     }
 
     if (added_to->value == 7) {
         if (new_equivalence->value == 1) {
-            printf("###############################################");
+            print_node(added_to);
+            print_node(new_equivalence);
         }
     }
 
@@ -225,6 +227,7 @@ int print_node(node *printed) {
         walk = walk->next;
         printf("%d ", walk->value);
     }
+
     walk = printed;
     while (walk->prev_equivalence) {
         walk = walk->prev_equivalence;
