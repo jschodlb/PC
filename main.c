@@ -11,8 +11,7 @@ int get_index(int x, int y, int width) {
 
 int get_lowest_not_black_value(int *array, int n) {
     // index of the lowest value
-    // 255 should be the highest possible unsigned char
-    int lowest = 255;
+    int lowest = INT_MAX;
     int i;
 
     // from lowest to the end of array
@@ -197,7 +196,53 @@ int fix_mask(int *mask, node *head, int width, int height) {
     return SUCCESS;
 }
 
-int paint_mask(int *mask, int width, int height) {
+int paint_mask(int *mask, int width, int height, colour_node *head) {
+    int i, j;
+
+    for (i = 0; i < height; i++) {
+        for (j = 0; j < width; j++) {
+            if (mask[get_index(j, i, width)] != 0) {
+                mask[get_index(j, i, width)] = get_colour(head, mask[get_index(j, i, width)]);
+            }
+        }
+    }
+}
+
+int paint(int *mask, int width, int height, node *head) {
+    colour_node *colours;
+    node *walk;
+    int num_of_colours = 0;
+
+    /* Sanity check */
+    if (!mask || !head) {
+        printf("Sanity check failed in pain_mask.\n");
+        return FAILURE;
+    }
+
+    colours = NULL;
+
+    walk = head;
+    while (walk) {
+        if (walk->value == get_equivalence(walk)) {
+            num_of_colours++;
+            add_colour_node(&colours, walk->value);
+        }
+        walk = walk->next;
+    }
+
+    set_colours(colours, num_of_colours);
+
+    paint_mask(mask, width, height, colours);
+
+    print_colour_list(colours);
+
+    free(colours);
+
+    return SUCCESS;
+}
+
+// TODO delete this function:
+int paint_mask_deprecated(int *mask, int width, int height) {
     int unique_labels = 0;
     int i, j;
     colour_node *colours = NULL;
@@ -373,7 +418,7 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    paint_mask(mask, width, height);
+    paint(mask, width, height, head);
 
     fprintf(file, "%s\r", magic_number);
     fprintf(file, "%u %u\r", width, height);

@@ -335,7 +335,7 @@ node *get_node(node *head, int value) {
     }
 
     walk = head;
-    while (walk != NULL) {
+    while (walk) {
         if (walk->value == value) {
             return walk;
         }

@@ -4,10 +4,10 @@
 #define SUCCESS 1
 #define FAILURE 0
 
-typedef struct thecolour_node {
+typedef struct the_colour_node {
     int label;
     int value;
-    struct thecolour_node *next;
+    struct the_colour_node *next;
 } colour_node;
 
 int label_exists(colour_node *head, int label);
