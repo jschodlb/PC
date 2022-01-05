@@ -53,6 +53,54 @@ int add_node(node** head, int *value) {
 }
 
 int add_equivalence(node *added_to, node *new_equivalence) {
+    node *last_added;
+    node *first_equivalence;
+    node *walk;
+    node *walk_e;
+
+    /* Sanity check */
+    if (!added_to || !new_equivalence) {
+        printf("Sanity check failed in add_equivalence.\n");
+        return FAILURE;
+    }
+
+    /* get to the end of added_to equivalence list */
+    last_added = added_to;
+    while (last_added->equivalence) {
+        last_added = last_added->equivalence;
+    }
+
+    /* get to the beginning of new_equivalence equivalence list */
+    first_equivalence = new_equivalence;
+    while (first_equivalence->prev_equivalence) {
+        first_equivalence = first_equivalence->prev_equivalence;
+    }
+
+
+    /* check for duplicates */
+    walk_e = first_equivalence;
+    while (walk_e) {
+        walk = last_added;
+        while (walk) {
+            if (walk->value == walk_e->value) {
+                return SUCCESS;
+            }
+            walk = walk->prev_equivalence;
+        }
+        walk_e = walk_e->equivalence;
+    }
+
+    /* adding equivalence
+       added_to->new_equivalence
+       added_to<-new_equivalence */
+    last_added->equivalence = first_equivalence;
+    first_equivalence->prev_equivalence = last_added;
+
+    return SUCCESS;
+}
+
+// TODO delete this function:
+int add_equivalence_deprecated(node *added_to, node *new_equivalence) {
     node *walk;
     node *walk_e;
     int *added_to_array;
@@ -68,30 +116,16 @@ int add_equivalence(node *added_to, node *new_equivalence) {
         return FAILURE;
     }
 
-    if (added_to->value == 1) {
-        if (new_equivalence->value == 7) {
-            print_node(added_to);
-            print_node(new_equivalence);
-        }
-    }
-
-    if (added_to->value == 7) {
-        if (new_equivalence->value == 1) {
-            print_node(added_to);
-            print_node(new_equivalence);
-        }
-    }
-
     // number of nodes in added_to equivalency list
     added_to_size = 0;
     walk = added_to;
     while (walk) {
-        walk = walk->equivalence;
         added_to_size++;
+        walk = walk->equivalence;
     }
 
-    walk = added_to;
-    while (walk->prev_equivalence) {
+    walk = added_to->prev_equivalence;
+    while (walk) {
         added_to_size++;
         walk = walk->prev_equivalence;
     }
@@ -106,8 +140,8 @@ int add_equivalence(node *added_to, node *new_equivalence) {
         new_equivalence_size++;
     }
 
-    walk = new_equivalence;
-    while (walk->prev_equivalence) {
+    walk = new_equivalence->prev_equivalence;
+    while (walk) {
         new_equivalence_size++;
         walk = walk->prev_equivalence;
     }
@@ -122,9 +156,9 @@ int add_equivalence(node *added_to, node *new_equivalence) {
         walk = walk->equivalence;
     }
 
-    walk = added_to;
-    while (walk->prev_equivalence) {
-        added_to_array[index] = walk->prev_equivalence->value;
+    walk = added_to->prev_equivalence;
+    while (walk) {
+        added_to_array[index] = walk->value;
         index++;
         walk = walk->prev_equivalence;
     }
@@ -137,9 +171,9 @@ int add_equivalence(node *added_to, node *new_equivalence) {
         walk = walk->equivalence;
     }
 
-    walk = new_equivalence;
-    while (walk->prev_equivalence) {
-        new_equivalence_array[index] = walk->prev_equivalence->value;
+    walk = new_equivalence->prev_equivalence;
+    while (walk) {
+        new_equivalence_array[index] = walk->value;
         index++;
         walk = walk->prev_equivalence;
     }
@@ -151,7 +185,7 @@ int add_equivalence(node *added_to, node *new_equivalence) {
             }
         }
     }
-
+    // ################################################################################################################
     // we need start of new_equivalence equivalence list
     walk_e = new_equivalence;
     while (walk_e->prev_equivalence) {
@@ -175,17 +209,13 @@ int add_equivalence(node *added_to, node *new_equivalence) {
         }
 
         /* adding equivalence */
-        walk_e = new_equivalence;
-        while(walk_e->prev_equivalence) {
-            walk_e = walk_e->prev_equivalence;
-        }
-
         walk->equivalence = walk_e;
         walk_e->prev_equivalence = walk;
 
         return SUCCESS;
     }
 }
+
 
 int get_equivalence(node *examined_node) {
     int min;
@@ -198,27 +228,27 @@ int get_equivalence(node *examined_node) {
     }
 
     /* walk is used to go through linked list of equivalence */
-    walk = examined_node;
+    walk = examined_node->equivalence;
     /* min value is the examined node's value in case it does not have equivalency to other values */
-    min = walk->value;
+    min = examined_node->value;
 
     /* going on the right side of equivalence linked list */
-    while (walk->equivalence !=NULL) {
-        walk = walk->equivalence;
+    while (walk) {
         if (walk->value < min) {
             min = walk->value;
         }
+        walk = walk->equivalence;
     }
 
     /* go back to examined node */
-    walk = examined_node;
+    walk = examined_node->prev_equivalence;
 
     /* go on the left side of equivalence linked list */
-    while (walk->prev_equivalence != NULL) {
-        walk = walk->prev_equivalence;
+    while (walk) {
         if (walk->value < min) {
             min = walk->value;
         }
+        walk = walk->prev_equivalence;
     }
 
     return min;

@@ -119,6 +119,24 @@ int set_colours(colour_node *head, int unique_colours) {
     return SUCCESS;
 }
 
+int print_colour_list(colour_node *head) {
+    colour_node *walk;
+
+    /* Sanity check */
+    if (!head) {
+        printf("Sanity check failed in print_colour_list.\n");
+        return FAILURE;
+    }
+
+    walk = head;
+    while (walk) {
+        printf("Label: %d, Value: %d\n", walk->label, walk->value);
+        walk = walk->next;
+    }
+
+    return SUCCESS;
+}
+
 int free_colour_list(colour_node *head) {
     colour_node *temp;
 

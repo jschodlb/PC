@@ -208,7 +208,6 @@ int paint_mask(int *mask, int width, int height) {
         for (j = 0; j < width; j++) {
             if (mask[get_index(j, i, width)] > 0 && label_exists(colours, mask[get_index(j, i, width)]) == 0) {
                 add_colour_node(&colours, mask[get_index(j, i, width)]);
-                printf("%d\n", mask[get_index(j, i, width)]);
                 unique_labels++;
             }
         }
@@ -225,6 +224,8 @@ int paint_mask(int *mask, int width, int height) {
     }
 
     printf("Unique labels: %d\n", unique_labels);
+
+    print_colour_list(colours);
 
     free_colour_list(colours);
 
@@ -243,7 +244,7 @@ int main(int argc, char *argv[]) {
     int *value;
     node *head = NULL;
 
-    value = (int *) malloc(sizeof(uchar));
+    value = (int *) malloc(sizeof(int));
 
     /* sanity check */
     if (!value) {
@@ -315,8 +316,6 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    printf("value = %d\n", *value);
-
     // first line is done so we start on i = 1
     // i is y in the mask, and j is x in the mask
     for (i = 1; i < height; i++) {
@@ -350,6 +349,7 @@ int main(int argc, char *argv[]) {
 
     fix_mask(mask, head, width, height);
     printf("Value = %d\n", *value);
+    //print_list(head);
 
 
     printf("\nMask after second walk-through:\n");

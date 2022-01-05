@@ -18,6 +18,8 @@ int get_colour(colour_node *head, int label);
 
 int set_colours(colour_node *head, int unique_colours);
 
+int print_colour_list(colour_node *head);
+
 int free_colour_list(colour_node *head);
 
 #endif
