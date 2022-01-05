@@ -54,8 +54,8 @@ int add_node(node** head, int *value) {
 
 int add_equivalence(node *added_to, node *new_equivalence) {
     node *walk;
-    uchar *added_to_array;
-    uchar *new_equivalence_array;
+    int *added_to_array;
+    int *new_equivalence_array;
     int index;
     int new_equivalence_size;
     int added_to_size;
@@ -95,7 +95,7 @@ int add_equivalence(node *added_to, node *new_equivalence) {
         walk = walk->prev_equivalence;
     }
 
-    added_to_array = (uchar *) malloc(added_to_size * sizeof(uchar));
+    added_to_array = (int *) malloc(added_to_size * sizeof(int));
 
     // get number of node in new equivalence equivalence list
     new_equivalence_size = 0;
@@ -111,7 +111,7 @@ int add_equivalence(node *added_to, node *new_equivalence) {
         walk = walk->prev_equivalence;
     }
 
-    new_equivalence_array = (uchar *) malloc(new_equivalence_size * sizeof(uchar));
+    new_equivalence_array = (int *) malloc(new_equivalence_size * sizeof(int));
 
     index = 0;
     walk = added_to;
@@ -180,8 +180,8 @@ int add_equivalence(node *added_to, node *new_equivalence) {
     }
 }
 
-uchar get_equivalence(node *examined_node) {
-    uchar min;
+int get_equivalence(node *examined_node) {
+    int min;
     node *walk;
 
     /* sanity check */
@@ -261,7 +261,7 @@ int print_list(node *head) {
     return SUCCESS;
 }
 
-node *get_node(node *head, uchar value) {
+node *get_node(node *head, int value) {
     node* walk;
 
     /* Sanity check */

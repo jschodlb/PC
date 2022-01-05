@@ -9,10 +9,10 @@ int get_index(int x, int y, int width) {
     return y * width + x;
 }
 
-uchar get_lowest_not_black_value(uchar *array, int n) {
+int get_lowest_not_black_value(int *array, int n) {
     // index of the lowest value
     // 255 should be the highest possible unsigned char
-    uchar lowest = 255;
+    int lowest = 255;
     int i;
 
     // from lowest to the end of array
@@ -27,8 +27,8 @@ uchar get_lowest_not_black_value(uchar *array, int n) {
     return lowest;
 }
 
-uchar get_highest(uchar *array, int n) {
-    uchar highest;
+int get_highest(int *array, int n) {
+    int highest;
     int i;
 
     if (!array) {
@@ -47,7 +47,7 @@ uchar get_highest(uchar *array, int n) {
     return highest;
 }
 
-int is_all_black(uchar *array, int n) {
+int is_all_black(int *array, int n) {
     int i;
 
     // if at least one pixel is not black return 0
@@ -61,10 +61,10 @@ int is_all_black(uchar *array, int n) {
     return 1;
 }
 
-uchar first_pixel_value(uchar *mask, int x, int y, int width, node **head, int *value) {
+int first_pixel_value(int *mask, int x, int y, int width, node **head, int *value) {
     int n = 2;
-    uchar output;
-    uchar *array = (uchar *) malloc(n * sizeof(uchar));
+    int output;
+    int *array = (int *) malloc(n * sizeof(int));
 
     // assign every neighboring pixel that we have to examine
     // up right
@@ -92,10 +92,10 @@ uchar first_pixel_value(uchar *mask, int x, int y, int width, node **head, int *
     return output;
 }
 
-int middle_pixel_value(uchar *mask, int x, int y, int width, node **head, int *value) {
+int middle_pixel_value(int *mask, int x, int y, int width, node **head, int *value) {
     int n = 4;
     int output;
-    uchar *array;
+    int *array;
 
     /* Sanity check */
     if (!mask || !head || !value) {
@@ -103,7 +103,7 @@ int middle_pixel_value(uchar *mask, int x, int y, int width, node **head, int *v
         return FAILURE;
     }
 
-    array = (uchar *) malloc(n * sizeof(uchar));
+    array = (int *) malloc(n * sizeof(int));
 
     if (!array) {
         printf("Malloc failed in middle_pixel_value.\n");
@@ -141,10 +141,10 @@ int middle_pixel_value(uchar *mask, int x, int y, int width, node **head, int *v
     return SUCCESS;
 }
 
-int last_pixel_value(uchar *mask, int x, int y, int width, node **head, int *value) {
+int last_pixel_value(int *mask, int x, int y, int width, node **head, int *value) {
     int n = 3;
     int output;
-    uchar *array = (uchar *) malloc(n * sizeof(uchar));
+    int *array = (int *) malloc(n * sizeof(int));
 
     // assign every neighboring pixel that we have to examine
     array[0] = mask[get_index(x-1, y, width)];
@@ -171,7 +171,7 @@ int last_pixel_value(uchar *mask, int x, int y, int width, node **head, int *val
     return output;
 }
 
-int fix_mask(uchar *mask, node *head, int width, int height) {
+int fix_mask(int *mask, node *head, int width, int height) {
     int i;
     int j;
 
@@ -197,7 +197,7 @@ int fix_mask(uchar *mask, node *head, int width, int height) {
     return SUCCESS;
 }
 
-int paint_mask(uchar *mask, int width, int height) {
+int paint_mask(int *mask, int width, int height) {
     int unique_labels = 0;
     int i, j;
     colour_node *colours = NULL;
@@ -206,10 +206,10 @@ int paint_mask(uchar *mask, int width, int height) {
     /* firstly do it for the first colour */
     for (i = 0; i < height; i++) {
         for (j = 0; j < width; j++) {
-            if (mask[get_index(j, i, width)] > 0) {
-                if (add_colour_node(&colours, mask[get_index(j, i, width)])) {
-                    unique_labels++;
-                }
+            if (mask[get_index(j, i, width)] > 0 && label_exists(colours, mask[get_index(j, i, width)]) == 0) {
+                add_colour_node(&colours, mask[get_index(j, i, width)]);
+                printf("%d\n", mask[get_index(j, i, width)]);
+                unique_labels++;
             }
         }
     }
@@ -226,6 +226,8 @@ int paint_mask(uchar *mask, int width, int height) {
 
     printf("Unique labels: %d\n", unique_labels);
 
+    free_colour_list(colours);
+
     return SUCCESS;
 }
 
@@ -237,7 +239,7 @@ int main(int argc, char *argv[]) {
     int i, j, index;
     uchar pixel;
     uchar *pixels;
-    uchar *mask;
+    int *mask;
     int *value;
     node *head = NULL;
 
@@ -271,7 +273,7 @@ int main(int argc, char *argv[]) {
 
     // assigns memory for pixels array and for mask array
     pixels = (uchar *) calloc(width * height, sizeof(uchar));
-    mask = (uchar *) calloc(width * height, sizeof(uchar));
+    mask = (int *) calloc(width * height, sizeof(int));
 
     index = 0;
     for (i = 0; i < height; i++) {

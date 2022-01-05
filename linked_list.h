@@ -7,7 +7,7 @@
 #define FAILURE 0
 
 typedef struct thenode {
-    uchar value;
+    int value;
     struct thenode *next;
     struct thenode *equivalence;
     struct thenode *prev_equivalence;
@@ -17,13 +17,13 @@ int add_node(node** head, int *value);
 
 int add_equivalence(node *added_to, node *equivalence);
 
-uchar get_equivalence(node *examined_node);
+int get_equivalence(node *examined_node);
 
 int print_node(node *printed);
 
 int print_list(node *head);
 
-node *get_node(node *head, uchar value);
+node *get_node(node *head, int value);
 
 int free_list(node *head);
 

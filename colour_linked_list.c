@@ -3,12 +3,11 @@
 
 #include "colour_linked_list.h"
 
-int label_exists(colour_node *head, uchar label) {
+int label_exists(colour_node *head, int label) {
     colour_node *walk;
 
-    /* Sanity check */
     if (!head) {
-        printf("Sanity check failed in is_in_list.\n");
+        /* list is empty, thus label does not exist in it */
         return FAILURE;
     }
 
@@ -25,7 +24,7 @@ int label_exists(colour_node *head, uchar label) {
 
 /* Given a reference (pointer to pointer) to the head
    of a list and an int, appends a new colour_node at the end  */
-int add_colour_node(colour_node **head, uchar label) {
+int add_colour_node(colour_node **head, int label) {
     /* used for the last colour_node */
     colour_node *last;
     /* new colour_node added to the end of the list */
@@ -34,10 +33,6 @@ int add_colour_node(colour_node **head, uchar label) {
     /* sanity check for head reference */
     if (!head) {
         printf("Head reference in add_colour_node is NULL.\n");
-        return FAILURE;
-    }
-
-    if (*head && label_exists(*head, label)) {
         return FAILURE;
     }
 
@@ -75,7 +70,7 @@ int add_colour_node(colour_node **head, uchar label) {
     return SUCCESS;
 }
 
-uchar get_colour(colour_node *head, uchar label) {
+int get_colour(colour_node *head, int label) {
     colour_node* walk;
 
     /* Sanity check */
@@ -89,28 +84,6 @@ uchar get_colour(colour_node *head, uchar label) {
         if (walk->label == label) {
             return walk->value;
         }
-        walk = walk->next;
-    }
-
-    return FAILURE;
-}
-
-int is_label_in_list(colour_node *head, uchar label) {
-    colour_node *walk;
-
-    /* Sanity check */
-    if (!head) {
-        printf("Sanity check failed in colour_exist.\n");
-        return FAILURE;
-    }
-
-    walk = head;
-
-    while (walk) {
-        if (walk->label == label) {
-            return SUCCESS;
-        }
-
         walk = walk->next;
     }
 
