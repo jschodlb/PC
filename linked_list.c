@@ -151,6 +151,11 @@ int add_equivalence(node *added_to, node *new_equivalence) {
         }
     }
 
+    // we need start of new_equivalence equivalence list
+    while (new_equivalence->prev_equivalence) {
+        new_equivalence = new_equivalence->prev_equivalence;
+    }
+
     /* when there is no equivalence for added_to node */
     if (added_to->equivalence == NULL) {
         added_to->equivalence = new_equivalence;

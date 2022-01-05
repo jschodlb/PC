@@ -206,22 +206,8 @@ int paint_mask(uchar *mask, int width, int height) {
     /* firstly do it for the first colour */
     for (i = 0; i < height; i++) {
         for (j = 0; j < width; j++) {
-            if (mask[get_index(j, i, width)] != 0) {
-                add_colour_node(&colours, mask[get_index(j, i, width)]);
-                unique_labels++;
-                break;
-            }
-        }
-        if (unique_labels > 0) {
-            break;
-        }
-    }
-
-    for (; i < height; i++) {
-        for (; j < width; j++) {
-            if (mask[get_index(j, i, width)] != 0) {
-                if (!is_label_in_list(colours, mask[get_index(j, i, width)])) {
-                    add_colour_node(&colours, mask[get_index(j, i, width)]);
+            if (mask[get_index(j, i, width)] > 0) {
+                if (add_colour_node(&colours, mask[get_index(j, i, width)])) {
                     unique_labels++;
                 }
             }
@@ -304,15 +290,6 @@ int main(int argc, char *argv[]) {
     }
     fclose(file);
 
-    /*
-    for (i = 0; i < height; i++) {
-        for (j = 0; j < width; j++) {
-            printf("%*d", 3, pixels[get_index(j, i, width)] == 255 ? 1 : 0);
-        }
-        printf("\n");
-    }
-     */
-
     *value = 0;
     // for the first pixel we only compare if it is white or black
     // if white we assign a new value, we ignore if black, because it stays 0
@@ -374,12 +351,14 @@ int main(int argc, char *argv[]) {
 
 
     printf("\nMask after second walk-through:\n");
-    for (i = 6; i < 79; i++) {
-        for (j = 9; j < 45; j++) {
+    /*
+    for (i = 0; i < 50; i++) {
+        for (j = 85; j < 124; j++) {
             printf("%*d", 3, mask[get_index(j, i, width)]);
         }
         printf("\n");
     }
+     */
 
 
 
@@ -405,12 +384,14 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    /*
     for (i = 6; i < 79; i++) {
-        for (j = 9; j < 45; j++) {
+        for (j = 85; j < 124; j++) {
             printf("%*d", 3, mask[get_index(j, i, width)]);
         }
         printf("\n");
     }
+     */
 
     fclose(file);
 

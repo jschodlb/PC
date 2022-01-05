@@ -3,6 +3,26 @@
 
 #include "colour_linked_list.h"
 
+int label_exists(colour_node *head, uchar label) {
+    colour_node *walk;
+
+    /* Sanity check */
+    if (!head) {
+        printf("Sanity check failed in is_in_list.\n");
+        return FAILURE;
+    }
+
+    walk = head;
+    while (walk) {
+        if (walk->label == label) {
+            return SUCCESS;
+        }
+        walk = walk->next;
+    }
+
+    return FAILURE;
+}
+
 /* Given a reference (pointer to pointer) to the head
    of a list and an int, appends a new colour_node at the end  */
 int add_colour_node(colour_node **head, uchar label) {
@@ -14,6 +34,10 @@ int add_colour_node(colour_node **head, uchar label) {
     /* sanity check for head reference */
     if (!head) {
         printf("Head reference in add_colour_node is NULL.\n");
+        return FAILURE;
+    }
+
+    if (*head && label_exists(*head, label)) {
         return FAILURE;
     }
 
@@ -111,6 +135,11 @@ int set_colours(colour_node *head, int unique_colours) {
     while (walk) {
         index++;
         walk->value = interval * index;
+        walk = walk->next;
+    }
+
+    walk = head;
+    while (walk) {
         walk = walk->next;
     }
 
