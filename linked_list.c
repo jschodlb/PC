@@ -5,7 +5,7 @@
 
 /* Given a reference (pointer to pointer) to the head
    of a list and an int, appends a new node at the end  */
-int add_node(node** head, uchar *value) {
+int add_node(node** head, int *value) {
     /* used for the last node */
     node *last;
     /* new node added to the end of the list */
@@ -52,18 +52,19 @@ int add_node(node** head, uchar *value) {
     return SUCCESS;
 }
 
-int add_equivalence(node *added_to, node *equivalence) {
+
+int add_equivalencea(node *added_to, node *new_equivalence, int x, int y) {
     node *walk;
 
     /* sanity check */
-    if (!added_to || !equivalence) {
+    if (!added_to || !new_equivalence) {
         printf("Failed sanity check in add_equivalence.\n");
         return FAILURE;
     }
 
     /* check if there is already this equivalence */
     /* checking added_to */
-    if (equivalence->value == added_to->value) {
+    if (new_equivalence->value == added_to->value) {
         return SUCCESS;
     }
 
@@ -71,7 +72,7 @@ int add_equivalence(node *added_to, node *equivalence) {
     walk = added_to;
     while (walk->prev_equivalence != NULL) {
         walk = walk->prev_equivalence;
-        if (walk->value == equivalence->value) {
+        if (walk->value == new_equivalence->value) {
             return SUCCESS;
         }
     }
@@ -80,30 +81,169 @@ int add_equivalence(node *added_to, node *equivalence) {
     walk = added_to;
     while (walk->equivalence != NULL) {
         walk = walk->equivalence;
-        if (walk->value == equivalence->value) {
+        if (walk->value == new_equivalence->value) {
             return SUCCESS;
         }
     }
 
     /* when there is no equivalence for added_to node */
     if (added_to->equivalence == NULL) {
-        added_to->equivalence = equivalence;
-        equivalence->prev_equivalence = added_to;
+        added_to->equivalence = new_equivalence;
+        new_equivalence->prev_equivalence = added_to;
 
         return SUCCESS;
     }
-    /* if there is equivalence for added_to node */
+        /* if there is equivalence for added_to node */
     else {
         /* going to the end of equivalence linked list */
-        walk = added_to->equivalence;
+        walk = added_to;
 
         while (walk->equivalence != NULL) {
             walk = walk->equivalence;
         }
 
         /* adding equivalence */
-        walk->equivalence = equivalence;
-        equivalence->prev_equivalence = walk;
+        walk->equivalence = new_equivalence;
+        new_equivalence->prev_equivalence = walk;
+
+        return SUCCESS;
+    }
+}
+
+int add_equivalence(node *added_to, node *new_equivalence) {
+    node *walk;
+    uchar *added_to_array;
+    uchar *new_equivalence_array;
+    int index;
+    int new_equivalence_size;
+    int added_to_size;
+    int i, j;
+
+    /* sanity check */
+    if (!added_to || !new_equivalence) {
+        printf("Failed sanity check in add_equivalence.\n");
+        return FAILURE;
+    }
+
+    // number of nodes in added_to equivalency list
+    added_to_size = 0;
+    walk = added_to;
+    while (walk) {
+        walk = walk->equivalence;
+        added_to_size++;
+    }
+
+    walk = added_to;
+    while (walk->prev_equivalence) {
+        added_to_size++;
+        walk = walk->prev_equivalence;
+    }
+
+    added_to_array = (uchar *) malloc(added_to_size * sizeof(uchar));
+
+    // get number of node in new equivalence equivalence list
+    new_equivalence_size = 0;
+    walk = new_equivalence;
+    while (walk) {
+        walk = walk->equivalence;
+        new_equivalence_size++;
+    }
+
+    walk = new_equivalence;
+    while (walk->prev_equivalence) {
+        new_equivalence_size++;
+        walk = walk->prev_equivalence;
+    }
+
+    new_equivalence_array = (uchar *) malloc(new_equivalence_size * sizeof(uchar));
+
+    index = 0;
+    walk = added_to;
+    while (walk) {
+        added_to_array[index] = walk->value;
+        index++;
+        walk = walk->equivalence;
+    }
+
+    walk = added_to;
+    while (walk->prev_equivalence) {
+        added_to_array[index] = walk->prev_equivalence->value;
+        index++;
+        walk = walk->prev_equivalence;
+    }
+
+    index = 0;
+    walk = new_equivalence;
+    while (walk) {
+        new_equivalence_array[index] = walk->value;
+        index++;
+        walk = walk->equivalence;
+    }
+
+    walk = new_equivalence;
+    while (walk->prev_equivalence) {
+        new_equivalence_array[index] = walk->prev_equivalence->value;
+        index++;
+        walk = walk->prev_equivalence;
+    }
+
+    for (i = 0; i < added_to_size; i++) {
+        for (j = 0; j < new_equivalence_size; j++) {
+            if (new_equivalence_array[j] == added_to_array[i]) {
+                return SUCCESS;
+            }
+        }
+    }
+
+    /* check if there is already this equivalence */
+    /* checking added_to */
+    /*
+    if (new_equivalence->value == added_to->value) {
+        return SUCCESS;
+    }
+    */
+
+    /* checking to the left */
+    /*
+    walk = added_to;
+    while (walk->prev_equivalence != NULL) {
+        walk = walk->prev_equivalence;
+        if (walk->value == new_equivalence->value) {
+            return SUCCESS;
+        }
+    }
+    */
+
+    /* checking to the right */
+    /*
+    walk = added_to;
+    while (walk->equivalence != NULL) {
+        walk = walk->equivalence;
+        if (walk->value == new_equivalence->value) {
+            return SUCCESS;
+        }
+    }
+    */
+
+    /* when there is no equivalence for added_to node */
+    if (added_to->equivalence == NULL) {
+        added_to->equivalence = new_equivalence;
+        new_equivalence->prev_equivalence = added_to;
+
+        return SUCCESS;
+    }
+        /* if there is equivalence for added_to node */
+    else {
+        /* going to the end of equivalence linked list */
+        walk = added_to;
+
+        while (walk->equivalence != NULL) {
+            walk = walk->equivalence;
+        }
+
+        /* adding equivalence */
+        walk->equivalence = new_equivalence;
+        new_equivalence->prev_equivalence = walk;
 
         return SUCCESS;
     }

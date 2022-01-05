@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "linked_list.h"
+#include "colour_linked_list.h"
 
 int get_index(int x, int y, int width) {
     return y * width + x;
@@ -60,7 +61,7 @@ int is_all_black(uchar *array, int n) {
     return 1;
 }
 
-uchar first_pixel_value(uchar *mask, int x, int y, int width, node **head, uchar *value) {
+uchar first_pixel_value(uchar *mask, int x, int y, int width, node **head, int *value) {
     int n = 2;
     uchar output;
     uchar *array = (uchar *) malloc(n * sizeof(uchar));
@@ -91,10 +92,24 @@ uchar first_pixel_value(uchar *mask, int x, int y, int width, node **head, uchar
     return output;
 }
 
-int middle_pixel_value(uchar *mask, int x, int y, int width, node **head, uchar *value) {
+int middle_pixel_value(uchar *mask, int x, int y, int width, node **head, int *value) {
     int n = 4;
     int output;
-    uchar *array = (uchar *) malloc(n * sizeof(uchar));
+    uchar *array;
+
+    /* Sanity check */
+    if (!mask || !head || !value) {
+        printf("Sanity check failed in middle_pixel_value.\n");
+        return FAILURE;
+    }
+
+    array = (uchar *) malloc(n * sizeof(uchar));
+
+    if (!array) {
+        printf("Malloc failed in middle_pixel_value.\n");
+        return FAILURE;
+    }
+
 
     // assign every neighboring pixel that we have to examine
     // left
@@ -123,10 +138,10 @@ int middle_pixel_value(uchar *mask, int x, int y, int width, node **head, uchar 
 
     free(array);
 
-    return output;
+    return SUCCESS;
 }
 
-int last_pixel_value(uchar *mask, int x, int y, int width, node **head, uchar *value) {
+int last_pixel_value(uchar *mask, int x, int y, int width, node **head, int *value) {
     int n = 3;
     int output;
     uchar *array = (uchar *) malloc(n * sizeof(uchar));
@@ -179,6 +194,51 @@ int fix_mask(uchar *mask, node *head, int width, int height) {
         }
     }
 
+    return SUCCESS;
+}
+
+int paint_mask(uchar *mask, int width, int height) {
+    int unique_labels = 0;
+    int i, j;
+    colour_node *colours = NULL;
+
+    /* number of unique labels -> number of unique colours */
+    /* firstly do it for the first colour */
+    for (i = 0; i < height; i++) {
+        for (j = 0; j < width; j++) {
+            if (mask[get_index(j, i, width)] != 0) {
+                add_colour_node(&colours, mask[get_index(j, i, width)]);
+                unique_labels++;
+                break;
+            }
+        }
+        if (unique_labels > 0) {
+            break;
+        }
+    }
+
+    for (; i < height; i++) {
+        for (; j < width; j++) {
+            if (mask[get_index(j, i, width)] != 0) {
+                if (!is_label_in_list(colours, mask[get_index(j, i, width)])) {
+                    add_colour_node(&colours, mask[get_index(j, i, width)]);
+                    unique_labels++;
+                }
+            }
+        }
+    }
+
+    set_colours(colours, unique_labels);
+
+    for (i = 0; i < height; i++) {
+        for (j = 0; j < width; j++) {
+            if (mask[get_index(j, i, width)] != 0) {
+                mask[get_index(j, i, width)] = get_colour(colours, mask[get_index(j, i, width)]);
+            }
+        }
+    }
+
+    printf("Unique labels: %d\n", unique_labels);
 
     return SUCCESS;
 }
@@ -186,16 +246,16 @@ int fix_mask(uchar *mask, node *head, int width, int height) {
 int main(int argc, char *argv[]) {
     FILE *file;
     char file_name[255];
-    char magic_number[2];
+    char magic_number[3];
     int width, height, max_value;
     int i, j, index;
     uchar pixel;
     uchar *pixels;
     uchar *mask;
-    uchar *value;
+    int *value;
     node *head = NULL;
 
-    value = (uchar *) malloc(sizeof(uchar));
+    value = (int *) malloc(sizeof(uchar));
 
     /* sanity check */
     if (!value) {
@@ -224,8 +284,8 @@ int main(int argc, char *argv[]) {
     printf("buff %s\nwidth %d\nheight %d\nmax value %d\n", magic_number, width, height, max_value);
 
     // assigns memory for pixels array and for mask array
-    pixels = calloc(width * height, sizeof(uchar));
-    mask = calloc(width * height, sizeof(uchar));
+    pixels = (uchar *) calloc(width * height, sizeof(uchar));
+    mask = (uchar *) calloc(width * height, sizeof(uchar));
 
     index = 0;
     for (i = 0; i < height; i++) {
@@ -244,23 +304,25 @@ int main(int argc, char *argv[]) {
     }
     fclose(file);
 
+    /*
     for (i = 0; i < height; i++) {
         for (j = 0; j < width; j++) {
             printf("%*d", 3, pixels[get_index(j, i, width)] == 255 ? 1 : 0);
         }
         printf("\n");
     }
+     */
 
     *value = 0;
     // for the first pixel we only compare if it is white or black
     // if white we assign a new value, we ignore if black, because it stays 0
     // if pixel is not black
-    if (pixels[0] != 0) {
+    if (pixels[0] > 0) {
         add_node(&head, value);
         mask[0] = *value;
+    } else {
+        mask[0] = 0;
     }
-
-
 
     // first line
     for (j = 1; j < width; j++) {
@@ -273,6 +335,8 @@ int main(int argc, char *argv[]) {
             }
         }
     }
+
+    printf("value = %d\n", *value);
 
     // first line is done so we start on i = 1
     // i is y in the mask, and j is x in the mask
@@ -295,6 +359,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    /*
     printf("\nMask after first walk-through:\n");
     for (i = 0; i < height; i++) {
         for (j = 0; j < width; j++) {
@@ -302,8 +367,10 @@ int main(int argc, char *argv[]) {
         }
         printf("\n");
     }
+    */
 
     fix_mask(mask, head, width, height);
+
 
     printf("\nMask after second walk-through:\n");
     for (i = 0; i < height; i++) {
@@ -313,22 +380,31 @@ int main(int argc, char *argv[]) {
         printf("\n");
     }
 
-    file = fopen(argv[2], "w+");
+
+    strcpy(file_name, "..\\tests\\");
+    strcat(file_name, argv[2]);
+    file = fopen(file_name, "w+");
 
     if (!file) {
-        printf("Fopen failed :(\n");
+        printf("Could not open file to write in it.\n");
         return EXIT_FAILURE;
     }
 
-    fprintf(file, "%s\n", magic_number);
-    fprintf(file, "%d %d\n", width, height);
-    fprintf(file, "%d\n", max_value);
+    paint_mask(mask, width, height);
 
+    fprintf(file, "%s\n", magic_number);
+    fprintf(file, "%u %u\n", width, height);
+    fprintf(file, "%u\n", max_value);
+
+    printf("\nMask after paint walk-through:\n");
     for (i = 0; i < height; i++) {
         for (j = 0; j < width; j++) {
+            printf("%*d", 4, mask[get_index(j, i, width)]);
             fprintf(file, "%c", mask[get_index(j, i, width)]);
         }
+        printf("\n");
     }
+
 
     fclose(file);
 

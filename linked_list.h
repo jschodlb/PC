@@ -13,7 +13,9 @@ typedef struct thenode {
     struct thenode *prev_equivalence;
 } node;
 
-int add_node(node** head, uchar *value);
+int add_node(node** head, int *value);
+
+int add_equivalencea(node *added_to, node *equivalence, int x, int y);
 
 int add_equivalence(node *added_to, node *equivalence);
 
