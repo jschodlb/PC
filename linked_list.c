@@ -52,64 +52,6 @@ int add_node(node** head, int *value) {
     return SUCCESS;
 }
 
-
-int add_equivalencea(node *added_to, node *new_equivalence, int x, int y) {
-    node *walk;
-
-    /* sanity check */
-    if (!added_to || !new_equivalence) {
-        printf("Failed sanity check in add_equivalence.\n");
-        return FAILURE;
-    }
-
-    /* check if there is already this equivalence */
-    /* checking added_to */
-    if (new_equivalence->value == added_to->value) {
-        return SUCCESS;
-    }
-
-    /* checking to the left */
-    walk = added_to;
-    while (walk->prev_equivalence != NULL) {
-        walk = walk->prev_equivalence;
-        if (walk->value == new_equivalence->value) {
-            return SUCCESS;
-        }
-    }
-
-    /* checking to the right */
-    walk = added_to;
-    while (walk->equivalence != NULL) {
-        walk = walk->equivalence;
-        if (walk->value == new_equivalence->value) {
-            return SUCCESS;
-        }
-    }
-
-    /* when there is no equivalence for added_to node */
-    if (added_to->equivalence == NULL) {
-        added_to->equivalence = new_equivalence;
-        new_equivalence->prev_equivalence = added_to;
-
-        return SUCCESS;
-    }
-        /* if there is equivalence for added_to node */
-    else {
-        /* going to the end of equivalence linked list */
-        walk = added_to;
-
-        while (walk->equivalence != NULL) {
-            walk = walk->equivalence;
-        }
-
-        /* adding equivalence */
-        walk->equivalence = new_equivalence;
-        new_equivalence->prev_equivalence = walk;
-
-        return SUCCESS;
-    }
-}
-
 int add_equivalence(node *added_to, node *new_equivalence) {
     node *walk;
     uchar *added_to_array;
@@ -123,6 +65,18 @@ int add_equivalence(node *added_to, node *new_equivalence) {
     if (!added_to || !new_equivalence) {
         printf("Failed sanity check in add_equivalence.\n");
         return FAILURE;
+    }
+
+    if (added_to->value == 1) {
+        if (new_equivalence->value == 7) {
+            printf("###############################################");
+        }
+    }
+
+    if (added_to->value == 7) {
+        if (new_equivalence->value == 1) {
+            printf("###############################################");
+        }
     }
 
     // number of nodes in added_to equivalency list
@@ -195,36 +149,6 @@ int add_equivalence(node *added_to, node *new_equivalence) {
         }
     }
 
-    /* check if there is already this equivalence */
-    /* checking added_to */
-    /*
-    if (new_equivalence->value == added_to->value) {
-        return SUCCESS;
-    }
-    */
-
-    /* checking to the left */
-    /*
-    walk = added_to;
-    while (walk->prev_equivalence != NULL) {
-        walk = walk->prev_equivalence;
-        if (walk->value == new_equivalence->value) {
-            return SUCCESS;
-        }
-    }
-    */
-
-    /* checking to the right */
-    /*
-    walk = added_to;
-    while (walk->equivalence != NULL) {
-        walk = walk->equivalence;
-        if (walk->value == new_equivalence->value) {
-            return SUCCESS;
-        }
-    }
-    */
-
     /* when there is no equivalence for added_to node */
     if (added_to->equivalence == NULL) {
         added_to->equivalence = new_equivalence;
@@ -287,6 +211,7 @@ uchar get_equivalence(node *examined_node) {
 }
 
 int print_node(node *printed) {
+    node *walk;
 
     /* Sanity check */
     if (!printed) {
@@ -294,7 +219,19 @@ int print_node(node *printed) {
         return FAILURE;
     }
 
-    printf("Value: %d Equivalency: %d\n", printed->value, get_equivalence(printed));
+    printf("Node: %d Equivalence: ", printed->value);
+    walk = printed;
+    while (walk->next) {
+        walk = walk->next;
+        printf("%d ", walk->value);
+    }
+    walk = printed;
+    while (walk->prev_equivalence) {
+        walk = walk->prev_equivalence;
+        printf("%d ", walk->value);
+    }
+    printf("\n");
+
     return SUCCESS;
 }
 
