@@ -9,12 +9,18 @@ int get_index(int x, int y, int width) {
     return y * width + x;
 }
 
-int get_lowest_not_black_value(int *array, int n) {
+int get_lowest_not_black_value(const int *array, int n) {
     // index of the lowest value
     int lowest = INT_MAX;
     int i;
 
-    // from lowest to the end of array
+    /* Sanity check */
+    if (!array) {
+        printf("Sanity check failed in get_lowest_not_black_value.\n");
+        return FAILURE;
+    }
+
+    /* getting lowest value in the array except of 0 */
     for (i = 0; i < n; i++) {
         if (array[i] != 0){
             if (array[i] < lowest) {
@@ -237,42 +243,6 @@ int paint(int *mask, int width, int height, node *head) {
     print_colour_list(colours);
 
     free(colours);
-
-    return SUCCESS;
-}
-
-// TODO delete this function:
-int paint_mask_deprecated(int *mask, int width, int height) {
-    int unique_labels = 0;
-    int i, j;
-    colour_node *colours = NULL;
-
-    /* number of unique labels -> number of unique colours */
-    /* firstly do it for the first colour */
-    for (i = 0; i < height; i++) {
-        for (j = 0; j < width; j++) {
-            if (mask[get_index(j, i, width)] > 0 && label_exists(colours, mask[get_index(j, i, width)]) == 0) {
-                add_colour_node(&colours, mask[get_index(j, i, width)]);
-                unique_labels++;
-            }
-        }
-    }
-
-    set_colours(colours, unique_labels);
-
-    for (i = 0; i < height; i++) {
-        for (j = 0; j < width; j++) {
-            if (mask[get_index(j, i, width)] != 0) {
-                mask[get_index(j, i, width)] = get_colour(colours, mask[get_index(j, i, width)]);
-            }
-        }
-    }
-
-    printf("Unique labels: %d\n", unique_labels);
-
-    print_colour_list(colours);
-
-    free_colour_list(colours);
 
     return SUCCESS;
 }
