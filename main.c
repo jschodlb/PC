@@ -2,420 +2,203 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "linked_list.h"
-#include "colour_linked_list.h"
+#include "error.h"
+#include "ccl.h"
 
-int get_index(int x, int y, int width) {
-    return y * width + x;
-}
+#define PGM_SUFFIX ".pgm"
+#define SUFFIX_SIZE 5
 
-int get_lowest_not_black_value(const int *array, int n) {
-    // index of the lowest value
-    int lowest = INT_MAX;
-    int i;
+#define MAGIC_NUMBER_SIZE 3
 
-    /* Sanity check */
-    if (!array) {
-        printf("Sanity check failed in get_lowest_not_black_value.\n");
-        return FAILURE;
-    }
+/* ____________________________________________________________________________
 
-    /* getting lowest value in the array except of 0 */
-    for (i = 0; i < n; i++) {
-        if (array[i] != 0){
-            if (array[i] < lowest) {
-                lowest = array[i];
-            }
-        }
-    }
+    Global Variables
+   ____________________________________________________________________________
+*/
+FILE *file = NULL; /* input and output file handle */
+uchar *pixels; /* input pgm image */
 
-    return lowest;
-}
-
-int get_highest(int *array, int n) {
-    int highest;
-    int i;
-
-    if (!array) {
-        printf("Sanity check failed in get_highest.\n");
-        return FAILURE;
-    }
-
-    highest = array[0];
-
-    for (i = 1; i < n; i++) {
-        if (array[i] > highest) {
-            highest = array[i];
-        }
-    }
-
-    return highest;
-}
-
-int is_all_black(int *array, int n) {
-    int i;
-
-    // if at least one pixel is not black return 0
-    for (i = 0; i < n; i++) {
-        if (array[i] > 0) {
-            return 0;
-        }
-    }
-
-    // if all pixels are black
-    return 1;
-}
-
-int first_pixel_value(int *mask, int x, int y, int width, node **head, int *value) {
-    int n = 2;
-    int output;
-    int *array = (int *) malloc(n * sizeof(int));
-
-    // assign every neighboring pixel that we have to examine
-    // up right
-    array[0] = mask[get_index(x+1, y-1, width)];
-    // up
-    array[1] = mask[get_index(x, y-1, width)];
-
-    // if all pixels are black
-    if (is_all_black(array, n)) {
-        output = 0;
-    } else {
-        output = get_lowest_not_black_value(array, n);
-    }
-
-    if (output == 0) {
-        add_node(head, value);
-        mask[get_index(x, y, width)] = *value;
-    } else {
-        mask[get_index(x, y, width)] = output;
-        add_equivalence(get_node(*head, output), get_node(*head, get_highest(array, n)));
-    }
-
-    free(array);
-
-    return output;
-}
-
-int middle_pixel_value(int *mask, int x, int y, int width, node **head, int *value) {
-    int n = 4;
-    int output;
-    int *array;
+/**
+ * Checks if file name has a .pgm suffix
+ *
+ * @param file_name name of the file
+ * @return SUCCESS if there is a .pgm suffix, FAILURE if not
+ */
+int check_pgm_suffix(char *file_name) {
+    char *dot;
 
     /* Sanity check */
-    if (!mask || !head || !value) {
-        printf("Sanity check failed in middle_pixel_value.\n");
+    if (!file_name) {
+        sanity_check("check_pgm_suffix");
         return FAILURE;
     }
 
-    array = (int *) malloc(n * sizeof(int));
+    dot = strrchr(file_name, '.'); /* finds the right most dot */
+    if (dot && !strcmp(dot, PGM_SUFFIX)) { /* finds out if there is pgm, after the right most dot */
+        return SUCCESS;
+    }
 
-    if (!array) {
-        printf("Malloc failed in middle_pixel_value.\n");
+    return FAILURE;
+}
+
+/**
+ * Adds .pgm suffix at the end of file_name
+ *
+ * @param file_name name of the file
+ * @return SUCCESS if the suffix was added successfully, FAILURE if not
+ */
+int add_pgm_suffix(char *file_name) {
+    char suffix[SUFFIX_SIZE];
+
+    /* Sanity check */
+    if (!file_name) {
+        sanity_check("add_pgm_suffix");
         return FAILURE;
     }
 
-
-    // assign every neighboring pixel that we have to examine
-    // left
-    array[0] = mask[get_index(x-1, y, width)];
-    // up left
-    array[1] = mask[get_index(x-1, y-1, width)];
-    // up
-    array[2] = mask[get_index(x, y-1, width)];
-    // up right
-    array[3] = mask[get_index(x+1, y-1, width)];
-
-    // if all pixels are black
-    if (is_all_black(array, n)) {
-        output = 0;
-    } else {
-        output = get_lowest_not_black_value(array, n);
-    }
-
-    if (output == 0) {
-        add_node(head, value);
-        mask[get_index(x, y, width)] = *value;
-    } else {
-        mask[get_index(x, y, width)] = output;
-        add_equivalence(get_node(*head, output), get_node(*head, get_highest(array, n)));
-    }
-
-    free(array);
+    strcpy(suffix, PGM_SUFFIX); /* copies .pgm suffix into suffix variable */
+    strcat(file_name, suffix); /* adds suffix at the end of file_name */
 
     return SUCCESS;
 }
 
-int last_pixel_value(int *mask, int x, int y, int width, node **head, int *value) {
-    int n = 3;
-    int output;
-    int *array = (int *) malloc(n * sizeof(int));
-
-    // assign every neighboring pixel that we have to examine
-    array[0] = mask[get_index(x-1, y, width)];
-    array[1] = mask[get_index(x-1, y-1, width)];
-    array[2] = mask[get_index(x, y-1, width)];
-
-    // if all pixels are black
-    if (is_all_black(array, n)) {
-        output = 0;
-    } else {
-        output = get_lowest_not_black_value(array, n);
-    }
-
-    if (output == 0) {
-        add_node(head, value);
-        mask[get_index(x, y, width)] = *value;
-    } else {
-        mask[get_index(x, y, width)] = output;
-        add_equivalence(get_node(*head, output), get_node(*head, get_highest(array, n)));
-    }
-
-    free(array);
-
-    return output;
-}
-
-int fix_mask(int *mask, node *head, int width, int height) {
-    int i;
-    int j;
-
-    /* Sanity check */
-    if (!mask) {
-        printf("Failed sanity check for mask in fix_mask.\n");
-        return 0;
-    }
-
-    if (!head) {
-        printf("Failed sanity check for head in fix_mask.\n");
-        return 0;
-    }
-
-    for (i = 0; i < height; i++) {
-        for (j = 0; j < width; j++) {
-            if (mask[get_index(j, i, width)]) {
-                mask[get_index(j, i, width)] = get_equivalence(get_node(head, mask[get_index(j, i, width)]));
-            }
-        }
-    }
-
-    return SUCCESS;
-}
-
-int paint_mask(int *mask, int width, int height, colour_node *head) {
+/**
+ * Reads data from file
+ *
+ * @param magic_number magic number from the file (P5)
+ */
+void read_from_file(char *magic_number, int *width, int *height, int *max_value) {
+    uchar pixel;
+    int index;
     int i, j;
 
-    for (i = 0; i < height; i++) {
-        for (j = 0; j < width; j++) {
-            if (mask[get_index(j, i, width)] != 0) {
-                mask[get_index(j, i, width)] = get_colour(head, mask[get_index(j, i, width)]);
-            }
-        }
-    }
-}
+    /* read basic information */
+    fscanf(file, "%s", magic_number); /* reads magic number (P5) */
+    fscanf(file, "%d %d %d", width, height, max_value);
+    fscanf(file, "%c", &pixel); /* reads new line character */
 
-int paint(int *mask, int width, int height, node *head) {
-    colour_node *colours;
-    node *walk;
-    int num_of_colours = 0;
+    pixels = (uchar *) calloc((*width) * (*height), sizeof(uchar)); /* assigns memory for pixels array */
 
-    /* Sanity check */
-    if (!mask || !head) {
-        printf("Sanity check failed in pain_mask.\n");
-        return FAILURE;
+    if (!pixels) {
+        malloc_fail("read_from_file");
+        exit(1);
     }
 
-    colours = NULL;
-
-    walk = head;
-    while (walk) {
-        if (walk->value == get_equivalence(walk)) {
-            num_of_colours++;
-            add_colour_node(&colours, walk->value);
-        }
-        walk = walk->next;
-    }
-
-    set_colours(colours, num_of_colours);
-
-    paint_mask(mask, width, height, colours);
-
-    print_colour_list(colours);
-
-    free(colours);
-
-    return SUCCESS;
-}
-
-int main(int argc, char *argv[]) {
-    FILE *file;
-    char file_name[255];
-    char magic_number[3];
-    int width, height, max_value;
-    int i, j, index;
-    uchar pixel;
-    uchar *pixels;
-    int *mask;
-    int *value;
-    node *head = NULL;
-
-    value = (int *) malloc(sizeof(int));
-
-    /* sanity check */
-    if (!value) {
-        printf("Malloc for uchar failed.\n");
-        return EXIT_FAILURE;
-    }
-
-    strcpy(file_name, "..\\tests\\");
-    strcat(file_name, argv[1]);
-
-    file = fopen(file_name, "r");
-
-    if (!file) {
-        printf("File not found.");
-        return EXIT_FAILURE;
-    }
-
-    fscanf(file, "%s", magic_number);
-
-    fscanf(file, "%d %d", &width, &height);
-    fscanf(file, "%d", &max_value);
-    // reading new line symbol, so it does not end up in pixels array
-    fscanf(file, "%c", &pixel);
-
-    // basic info about pgm file
-    printf("buff %s\nwidth %d\nheight %d\nmax value %d\n", magic_number, width, height, max_value);
-
-    // assigns memory for pixels array and for mask array
-    pixels = (uchar *) calloc(width * height, sizeof(uchar));
-    mask = (int *) calloc(width * height, sizeof(int));
-
+    /* reads pixels from file into a pixels array and checks if it is only black and white */
     index = 0;
-    for (i = 0; i < height; i++) {
-        for (j = 0; j < width; j++) {
+    for (i = 0; i < *height; i++) {
+        for (j = 0; j < *width; j++) {
             fscanf(file, "%c", &pixel);
 
-            if (!((uchar) pixel == max_value || (uchar) pixel == 0)) {
+            if (!((uchar) pixel == *max_value || (uchar) pixel == 0)) {
                 printf("Incorrect PGM format.");
                 fclose(file);
                 free(pixels);
-                return EXIT_FAILURE;
+                exit(0);
             }
 
             pixels[index++] = (uchar) pixel;
         }
     }
+
     fclose(file);
+}
 
-    *value = 0;
-    // for the first pixel we only compare if it is white or black
-    // if white we assign a new value, we ignore if black, because it stays 0
-    // if pixel is not black
-    if (pixels[0] > 0) {
-        add_node(&head, value);
-        mask[0] = *value;
-    } else {
-        mask[0] = 0;
+/**
+ * Handles input from file.
+ * @param argc number of arguments
+ * @param argv arguments
+ */
+void load_file(int argc, char *argv[]) {
+    char *file_name;
+
+    if (argc != 3) {
+        printf("File name not entered.\n");
+        exit(1);
     }
 
-    // first line
-    for (j = 1; j < width; j++) {
-        if (pixels[j] != 0) {
-            if (mask[j-1] == 0) {
-                add_node(&head, value);
-                mask[j] = *value;
-            } else {
-                mask[j] = mask[j-1];
-            }
-        }
+    file_name = (char *) malloc(sizeof(char) * (strlen(argv[1]) + 1 + SUFFIX_SIZE));
+    strcpy(file_name, argv[1]); /* copies name of the file from argument to file_name */
+
+    if (!check_pgm_suffix(file_name)) { /* checks for .pgm suffix */
+        add_pgm_suffix(file_name); /* adds .pgm suffix */
     }
 
-    // first line is done so we start on i = 1
-    // i is y in the mask, and j is x in the mask
-    for (i = 1; i < height; i++) {
-        // for the first pixel in line we do not have to check left neighbor, because there is nothing
-        if (pixels[get_index(0, i, width)] != 0) {
-            first_pixel_value(mask, 0, i, width, &head, value);
-        }
-
-        // middle pixels
-        for (j = 1; j < width - 1; j++) {
-            if (pixels[get_index(j, i, width)] != 0) {
-                middle_pixel_value(mask, j, i, width, &head, value);
-            }
-        }
-
-        // last pixels
-        if (pixels[get_index(width-1, i, width)] != 0) {
-            last_pixel_value(mask, width-1, i, width, &head, value);
-        }
-    }
-
-    /*
-    printf("\nMask after first walk-through:\n");
-    for (i = 0; i < height; i++) {
-        for (j = 0; j < width; j++) {
-            printf("%*d", 3, mask[get_index(j, i, width)]);
-        }
-        printf("\n");
-    }
-    */
-
-    fix_mask(mask, head, width, height);
-    printf("Value = %d\n", *value);
-    //print_list(head);
-
-
-    printf("\nMask after second walk-through:\n");
-    /*
-    for (i = 0; i < 50; i++) {
-        for (j = 85; j < 124; j++) {
-            printf("%*d", 3, mask[get_index(j, i, width)]);
-        }
-        printf("\n");
-    }
-     */
-
-
-
-    strcpy(file_name, "..\\tests\\");
-    strcat(file_name, argv[2]);
-    file = fopen(file_name, "w+");
+    file = fopen(file_name, "r"); /* opens file for reading */
 
     if (!file) {
-        printf("Could not open file to write in it.\n");
-        return EXIT_FAILURE;
+        printf("Could not open file\n");
+        exit(1);
     }
 
-    paint(mask, width, height, head);
+    free(file_name);
+}
 
+/**
+ * Writes into a file
+ *
+ * @param argv contains name of the file
+ * @param mask data written into the file
+ * @param magic_number magic number (eg. P5) written into the file
+ * @param width width of the file
+ * @param height height of the file
+ * @param max_value max value of colours (eg. 255)
+ */
+void write_into_file(char *argv[], int *mask, char *magic_number, int width, int height, int max_value) {
+    char *file_name;
+    int i, j;
+
+    file_name = (char *) malloc(sizeof(char) * (strlen(argv[1]) + 1 + SUFFIX_SIZE));
+    strcpy(file_name, argv[2]); /* copies name of the file from argument to file_name */
+
+    if (!check_pgm_suffix(file_name)) { /* checks for .pgm suffix */
+        add_pgm_suffix(file_name); /* adds .pgm suffix */
+    }
+
+    /* opens file */
+    file = fopen(file_name, "w");
+    if (!file) {
+        printf("Could not open file to write in it.\n");
+        exit(1);
+    }
+
+    /* writes information about the file */
     fprintf(file, "%s\r", magic_number);
     fprintf(file, "%u %u\r", width, height);
     fprintf(file, "%u\r", max_value);
 
-    printf("\nMask after paint walk-through:\n");
+    /* writes data into the file */
     for (i = 0; i < height; i++) {
         for (j = 0; j < width; j++) {
-            fprintf(file, "%c", mask[get_index(j, i, width)]);
+            fprintf(file, "%c", (uchar) mask[get_index(j, i)]);
         }
     }
-
-    /*
-    for (i = 6; i < 79; i++) {
-        for (j = 85; j < 124; j++) {
-            printf("%*d", 3, mask[get_index(j, i, width)]);
-        }
-        printf("\n");
-    }
-     */
 
     fclose(file);
+}
+
+/**
+ * Main function.
+ */
+int main(int argc, char *argv[]) {
+    char magic_number[MAGIC_NUMBER_SIZE];
+    int *mask = NULL;
+    int width, height;
+    int max_value; /* max value of a pixel */
+
+    printf("Reading from file...\n");
+    load_file(argc, argv);
+    read_from_file(magic_number, &width, &height, &max_value);
+
+    printf("Running CCL algorithm...\n");
+    run(&mask, pixels, width, height, max_value);
+
+    printf("Writing into file...\n");
+    write_into_file(argv, mask, magic_number, width, height, max_value);
+    printf("Everything is done.\n");
 
     free(pixels);
     free(mask);
-    free(value);
-    free_list(head);
 
     return EXIT_SUCCESS;
 }

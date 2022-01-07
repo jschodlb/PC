@@ -2,10 +2,15 @@
 #include <stdlib.h>
 
 #include "linked_list.h"
+#include "error.h"
 
-/* Given a reference (pointer to pointer) to the head
-   of a list and an int, appends a new node at the end  */
-int add_node(node** head, int *value) {
+/**
+ * Adds node to a linked list
+ *
+ * @param head head of the linked list
+ * @param label value of the node
+ */
+void add_node(node** head, int *value) {
     /* used for the last node */
     node *last;
     /* new node added to the end of the list */
@@ -13,21 +18,20 @@ int add_node(node** head, int *value) {
     
     /* sanity check for head reference */
     if (!head) {
-        printf("Head reference in add_node is NULL.\n");
-        return FAILURE;
+        sanity_check("add_node");
+        exit(1);
     }
 
     /* allocate memory for the new node */
     new_node = (node *) malloc(sizeof(node));
     /* if malloc fails */
     if (!new_node) {
-        printf("Malloc failed in add_node.\n");
-        return FAILURE;
+        malloc_fail("add_node");
+        exit(1);
     }
 
-    /* Putting data in the new node  */
-    *value = *value + 1;
-    new_node->value  = *value;
+    *value = *value + 1; /* next value added to the node */
+    new_node->value  = *value; /* saves value into the node */
     /* node pointers set to NULL for now */
     new_node->next = NULL;
     new_node->equivalence = NULL;
@@ -36,8 +40,7 @@ int add_node(node** head, int *value) {
     /* if the linked list is empty, we assign new node to head */
     if (*head == NULL) {
         *head = new_node;
-
-        return SUCCESS;
+        return;
     }
 
     /* if the linked list is not empty, we from head to the last node */
@@ -48,11 +51,19 @@ int add_node(node** head, int *value) {
 
     /* we add new node next to last node */
     last->next = new_node;
-
-    return SUCCESS;
 }
 
-int add_equivalence(node *node1, node *node2) {
+/**
+ * Adds equivalence of node1 and node2
+ * To node1, equivalence is added at the end
+ * To node2, equivalence is added at the beginning
+ * node1->node2
+ * node1<-node2
+ *
+ * @param node1 node added equivalency to
+ * @param node2 node added equivalency to
+ */
+void add_equivalence(node *node1, node *node2) {
     node *last_node1;
     node *first_node2;
     node *walk1;
@@ -60,17 +71,17 @@ int add_equivalence(node *node1, node *node2) {
 
     /* Sanity check */
     if (!node1 || !node2) {
-        printf("Sanity check failed in add_equivalence.\n");
-        return FAILURE;
+        sanity_check("add_equivalence");
+        exit(1);
     }
 
-    /* get to the end of added_to equivalence list */
+    /* get to the end of node1 equivalence list */
     last_node1 = node1;
     while (last_node1->equivalence) {
         last_node1 = last_node1->equivalence;
     }
 
-    /* get to the beginning of new_equivalence equivalence list */
+    /* get to the beginning of node2 equivalence list */
     first_node2 = node2;
     while (first_node2->prev_equivalence) {
         first_node2 = first_node2->prev_equivalence;
@@ -83,7 +94,7 @@ int add_equivalence(node *node1, node *node2) {
         walk1 = last_node1;
         while (walk1) {
             if (walk1->value == walk2->value) {
-                return SUCCESS;
+                return;
             }
             walk1 = walk1->prev_equivalence;
         }
@@ -91,140 +102,26 @@ int add_equivalence(node *node1, node *node2) {
     }
 
     /* adding equivalence
-       added_to->new_equivalence
-       added_to<-new_equivalence */
+       node1->node2
+       node1<-node2 */
     last_node1->equivalence = first_node2;
     first_node2->prev_equivalence = last_node1;
-
-    return SUCCESS;
 }
 
-// TODO delete this function:
-int add_equivalence_deprecated(node *added_to, node *new_equivalence) {
-    node *walk;
-    node *walk_e;
-    int *added_to_array;
-    int *new_equivalence_array;
-    int index;
-    int new_equivalence_size;
-    int added_to_size;
-    int i, j;
-
-    /* sanity check */
-    if (!added_to || !new_equivalence) {
-        printf("Failed sanity check in add_equivalence.\n");
-        return FAILURE;
-    }
-
-    // number of nodes in added_to equivalency list
-    added_to_size = 0;
-    walk = added_to;
-    while (walk) {
-        added_to_size++;
-        walk = walk->equivalence;
-    }
-
-    walk = added_to->prev_equivalence;
-    while (walk) {
-        added_to_size++;
-        walk = walk->prev_equivalence;
-    }
-
-    added_to_array = (int *) malloc(added_to_size * sizeof(int));
-
-    // get number of node in new equivalence equivalence list
-    new_equivalence_size = 0;
-    walk = new_equivalence;
-    while (walk) {
-        walk = walk->equivalence;
-        new_equivalence_size++;
-    }
-
-    walk = new_equivalence->prev_equivalence;
-    while (walk) {
-        new_equivalence_size++;
-        walk = walk->prev_equivalence;
-    }
-
-    new_equivalence_array = (int *) malloc(new_equivalence_size * sizeof(int));
-
-    index = 0;
-    walk = added_to;
-    while (walk) {
-        added_to_array[index] = walk->value;
-        index++;
-        walk = walk->equivalence;
-    }
-
-    walk = added_to->prev_equivalence;
-    while (walk) {
-        added_to_array[index] = walk->value;
-        index++;
-        walk = walk->prev_equivalence;
-    }
-
-    index = 0;
-    walk = new_equivalence;
-    while (walk) {
-        new_equivalence_array[index] = walk->value;
-        index++;
-        walk = walk->equivalence;
-    }
-
-    walk = new_equivalence->prev_equivalence;
-    while (walk) {
-        new_equivalence_array[index] = walk->value;
-        index++;
-        walk = walk->prev_equivalence;
-    }
-
-    for (i = 0; i < added_to_size; i++) {
-        for (j = 0; j < new_equivalence_size; j++) {
-            if (new_equivalence_array[j] == added_to_array[i]) {
-                return SUCCESS;
-            }
-        }
-    }
-    // ################################################################################################################
-    // we need start of new_equivalence equivalence list
-    walk_e = new_equivalence;
-    while (walk_e->prev_equivalence) {
-        walk_e = walk_e->prev_equivalence;
-    }
-
-    /* when there is no equivalence for added_to node */
-    if (added_to->equivalence == NULL) {
-        added_to->equivalence = walk_e;
-        walk_e->prev_equivalence = added_to;
-
-        return SUCCESS;
-    }
-        /* if there is equivalence for added_to node */
-    else {
-        /* going to the end of equivalence linked list */
-        walk = added_to;
-
-        while (walk->equivalence != NULL) {
-            walk = walk->equivalence;
-        }
-
-        /* adding equivalence */
-        walk->equivalence = walk_e;
-        walk_e->prev_equivalence = walk;
-
-        return SUCCESS;
-    }
-}
-
-
+/**
+ * Gets the lowest value in the equivalence list of examined_node
+ *
+ * @param examined_node this node's equivalence list is examined
+ * @return value of the best equivalence
+ */
 int get_equivalence(node *examined_node) {
     int min;
     node *walk;
 
     /* sanity check */
     if (!examined_node) {
-        printf("Failed sanity check in get_equivalence.\n");
-        return FAILURE;
+        sanity_check("get_equivalence");
+        exit(1);
     }
 
     /* walk is used to go through linked list of equivalence */
@@ -254,77 +151,14 @@ int get_equivalence(node *examined_node) {
     return min;
 }
 
-int print_node(node *printed) {
-    node *walk;
-
-    /* Sanity check */
-    if (!printed) {
-        printf("Sanity check failed in print_node.\n");
-        return FAILURE;
-    }
-
-    printf("Value: %d\n", printed->value);
-
-    walk = printed;
-    while (walk->prev_equivalence) {
-        walk = walk->prev_equivalence;
-    }
-
-    printf("Equivalence:");
-    while (walk) {
-        printf(" %d", walk->value);
-        walk = walk->equivalence;
-    }
-
-    printf("\n");
-
-    return SUCCESS;
-}
-
-int print_node_deprecated(node *printed) {
-    node *walk;
-
-    /* Sanity check */
-    if (!printed) {
-        printf("Sanity check failed in print_node.\n");
-        return FAILURE;
-    }
-
-    printf("Node: %d Equivalence: ", printed->value);
-    walk = printed;
-    while (walk->next) {
-        walk = walk->next;
-        printf("%d ", walk->value);
-    }
-
-    walk = printed;
-    while (walk->prev_equivalence) {
-        walk = walk->prev_equivalence;
-        printf("%d ", walk->value);
-    }
-    printf("\n");
-
-    return SUCCESS;
-}
-
-int print_list(node *head) {
-    node *walk;
-
-    /* Sanity check */
-    if (!head) {
-        printf("Sanity check failed in print_list.\n");
-        return FAILURE;
-    }
-
-    walk = head;
-    while (walk != NULL) {
-        print_node(walk);
-        walk = walk->next;
-    }
-
-    return SUCCESS;
-}
-
+/**
+ * Returns node according to its value.
+ * Finds node with value from the argument and returns it.
+ *
+ * @param head head of the linked list
+ * @param value searched for value
+ * @return node with value value or NULL
+ */
 node *get_node(node *head, int value) {
     node* walk;
 
@@ -334,6 +168,7 @@ node *get_node(node *head, int value) {
         return NULL;
     }
 
+    /* walks through list the whole list and when finds node with value it returns it */
     walk = head;
     while (walk) {
         if (walk->value == value) {
@@ -345,17 +180,69 @@ node *get_node(node *head, int value) {
     return NULL;
 }
 
-int free_list(node *head) {
+/**
+ * Prints the node's value and its equivalence list
+ *
+ * @param printed printed node
+ */
+void print_node(node *printed) {
+    node *walk;
+
+    /* Sanity check */
+    if (!printed) {
+        sanity_check("print_node");
+        exit(1);
+    }
+
+    printf("Value: %d\n", printed->value);
+
+    /* getting to the beginning of the equivalence list */
+    walk = printed;
+    while (walk->prev_equivalence) {
+        walk = walk->prev_equivalence;
+    }
+
+    /* printing equivalence from the beginning to the end */
+    printf("Equivalence:");
+    while (walk) {
+        printf(" %d", walk->value);
+        walk = walk->equivalence;
+    }
+
+    printf("\n");
+}
+
+/**
+ * Goes through the whole list and prints every node using print_node function
+ *
+ * @param head head of the linked list
+ */
+void print_list(node *head) {
+    node *walk;
+
+    /* Sanity check */
+    if (!head) {
+        sanity_check("print_list");
+        exit(1);
+    }
+
+    walk = head;
+    while (walk != NULL) {
+        print_node(walk);
+        walk = walk->next;
+    }
+}
+
+/**
+ * Frees the linked list
+ *
+ * @param head head of the linked list
+ */
+void free_list(node *head) {
     /* goes through list */
     node *walk;
     /* help variable for free */
     node *temp;
-
-    /* Sanity check */
-    if (!head) {
-        printf("Sanity check failed in free_list.\n");
-        return FAILURE;
-    }
 
     /* going through the list */
     walk = head;
@@ -365,6 +252,4 @@ int free_list(node *head) {
         /* freeing nodes */
         free(temp);
     }
-
-    return SUCCESS;
 }
