@@ -18,6 +18,7 @@ typedef struct thenode {
     struct thenode *next;
     struct thenode *equivalence;
     struct thenode *prev_equivalence;
+    int best_equivalence;
 } node;
 
 /**
@@ -57,6 +58,13 @@ int get_equivalence(node *examined_node);
  * @return node with value value
  */
 node *get_node(node *head, int value);
+
+/**
+ * Function will set the best equivalence value for every node in the linked list.
+ *
+ * @param head head of the linked list
+ */
+void set_best_equivalence(node *head);
 
 /**
  * Prints the node's value and its equivalence list

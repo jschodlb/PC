@@ -4,6 +4,16 @@
 #define FAILURE 0
 #define SUCCESS 1
 
+#define CYCLE_START 0
+
+#define BLACK 0
+
+#define FIRST_INDEX 0
+
+#define NUMBER_OF_NEIGHBOHRS_FIRST_COLUMN 2
+#define NUMBER_OF_NEIGHBOHRS_MIDDLE_COLUMN 4
+#define NUMBER_OF_NEIGHBOHRS_LAST_COLUMN 3
+
 #define uchar unsigned char
 
 /**

@@ -1,8 +1,12 @@
 #ifndef __COLOUR_LINKED_LIST_H__
 #define __COLOUR_LINKED_LIST_H__
 
-#define SUCCESS 1
 #define FAILURE 0
+#define SUCCESS 1
+
+#define CYCLE_START 0
+
+#define FIRST_INDEX 0
 
 /**
  * colour node

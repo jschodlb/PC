@@ -10,16 +10,14 @@
  * @param head head of the linked list
  * @param label value of the node
  */
-void add_node(node** head, int *value) {
-    /* used for the last node */
-    node *last;
-    /* new node added to the end of the list */
+void add_node(node **head, int *value) {
+    /* new node added to the list */
     node *new_node;
     
     /* sanity check for head reference */
     if (!head) {
         sanity_check("add_node");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     /* allocate memory for the new node */
@@ -27,7 +25,7 @@ void add_node(node** head, int *value) {
     /* if malloc fails */
     if (!new_node) {
         malloc_fail("add_node");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     *value = *value + 1; /* next value added to the node */
@@ -35,7 +33,9 @@ void add_node(node** head, int *value) {
     /* node pointers set to NULL for now */
     new_node->next = NULL;
     new_node->equivalence = NULL;
-    new_node->prev_equivalence =NULL;
+    new_node->prev_equivalence = NULL;
+    /* for now set the best equivalence to the new node's value */
+    new_node->best_equivalence = *value;
 
     /* if the linked list is empty, we assign new node to head */
     if (*head == NULL) {
@@ -43,14 +43,9 @@ void add_node(node** head, int *value) {
         return;
     }
 
-    /* if the linked list is not empty, we from head to the last node */
-    last = *head;
-    while (last->next != NULL) {
-        last = last->next;
-    }
-
-    /* we add new node next to last node */
-    last->next = new_node;
+    /* adding node to the start of the linked list */
+    new_node->next = *head;
+    *head = new_node;
 }
 
 /**
@@ -72,7 +67,7 @@ void add_equivalence(node *node1, node *node2) {
     /* Sanity check */
     if (!node1 || !node2) {
         sanity_check("add_equivalence");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     /* get to the end of node1 equivalence list */
@@ -121,7 +116,7 @@ int get_equivalence(node *examined_node) {
     /* sanity check */
     if (!examined_node) {
         sanity_check("get_equivalence");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     /* walk is used to go through linked list of equivalence */
@@ -177,7 +172,33 @@ node *get_node(node *head, int value) {
         walk = walk->next;
     }
 
+    printf("get_node: Node not found!\n");
+
     return NULL;
+}
+
+/**
+ * Function will set the best equivalence value for every node in the linked list.
+ *
+ * @param head head of the linked list
+ */
+void set_best_equivalence(node *head) {
+    node *walk;
+    int best_equivalence;
+
+    /* Sanity check */
+    if (!head) {
+        sanity_check("set_best_equivalence");
+        exit(EXIT_FAILURE);
+    }
+
+    walk = head;
+    while (walk) {
+        best_equivalence = get_equivalence(walk);
+        walk->best_equivalence = best_equivalence;
+
+        walk = walk->next;
+    }
 }
 
 /**
@@ -191,7 +212,7 @@ void print_node(node *printed) {
     /* Sanity check */
     if (!printed) {
         sanity_check("print_node");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     printf("Value: %d\n", printed->value);
@@ -223,7 +244,7 @@ void print_list(node *head) {
     /* Sanity check */
     if (!head) {
         sanity_check("print_list");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     walk = head;

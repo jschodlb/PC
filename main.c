@@ -1,12 +1,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include "error.h"
 #include "ccl.h"
 
 #define PGM_SUFFIX ".pgm"
 #define SUFFIX_SIZE 5
+
+#define INPUT_FILE_NAME_INDEX 1
+#define OUTPUT_FILE_NAME_INDEX 2
 
 #define MAGIC_NUMBER_SIZE 3
 
@@ -81,20 +85,20 @@ void read_from_file(char *magic_number, int *width, int *height, int *max_value)
 
     if (!pixels) {
         malloc_fail("read_from_file");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     /* reads pixels from file into a pixels array and checks if it is only black and white */
-    index = 0;
-    for (i = 0; i < *height; i++) {
-        for (j = 0; j < *width; j++) {
+    index = FIRST_INDEX;
+    for (i = CYCLE_START; i < *height; i++) {
+        for (j = CYCLE_START; j < *width; j++) {
             fscanf(file, "%c", &pixel);
 
-            if (!((uchar) pixel == *max_value || (uchar) pixel == 0)) {
-                printf("Incorrect PGM format.");
+            if (!((uchar) pixel == *max_value || (uchar) pixel == BLACK)) {
+                printf("Incorrect PGM format.\n");
                 fclose(file);
                 free(pixels);
-                exit(0);
+                exit(EXIT_FAILURE);
             }
 
             pixels[index++] = (uchar) pixel;
@@ -114,11 +118,11 @@ void load_file(int argc, char *argv[]) {
 
     if (argc != 3) {
         printf("File name not entered.\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
-    file_name = (char *) malloc(sizeof(char) * (strlen(argv[1]) + 1 + SUFFIX_SIZE));
-    strcpy(file_name, argv[1]); /* copies name of the file from argument to file_name */
+    file_name = (char *) malloc(sizeof(char) * (strlen(argv[INPUT_FILE_NAME_INDEX]) + SUFFIX_SIZE));
+    strcpy(file_name, argv[INPUT_FILE_NAME_INDEX]); /* copies name of the file from argument to file_name */
 
     if (!check_pgm_suffix(file_name)) { /* checks for .pgm suffix */
         add_pgm_suffix(file_name); /* adds .pgm suffix */
@@ -128,7 +132,7 @@ void load_file(int argc, char *argv[]) {
 
     if (!file) {
         printf("Could not open file\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     free(file_name);
@@ -146,10 +150,10 @@ void load_file(int argc, char *argv[]) {
  */
 void write_into_file(char *argv[], int *mask, char *magic_number, int width, int height, int max_value) {
     char *file_name;
-    int i, j;
+    int i;
 
-    file_name = (char *) malloc(sizeof(char) * (strlen(argv[1]) + 1 + SUFFIX_SIZE));
-    strcpy(file_name, argv[2]); /* copies name of the file from argument to file_name */
+    file_name = (char *) malloc(sizeof(char) * (strlen(argv[OUTPUT_FILE_NAME_INDEX]) + SUFFIX_SIZE));
+    strcpy(file_name, argv[OUTPUT_FILE_NAME_INDEX]); /* copies name of the file from argument to file_name */
 
     if (!check_pgm_suffix(file_name)) { /* checks for .pgm suffix */
         add_pgm_suffix(file_name); /* adds .pgm suffix */
@@ -159,7 +163,7 @@ void write_into_file(char *argv[], int *mask, char *magic_number, int width, int
     file = fopen(file_name, "w");
     if (!file) {
         printf("Could not open file to write in it.\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     /* writes information about the file */
@@ -168,10 +172,8 @@ void write_into_file(char *argv[], int *mask, char *magic_number, int width, int
     fprintf(file, "%u\r", max_value);
 
     /* writes data into the file */
-    for (i = 0; i < height; i++) {
-        for (j = 0; j < width; j++) {
-            fprintf(file, "%c", (uchar) mask[get_index(j, i)]);
-        }
+    for (i = CYCLE_START; i < width * height; i++) {
+            fprintf(file, "%c", (uchar) mask[i]);
     }
 
     fclose(file);
@@ -186,6 +188,9 @@ int main(int argc, char *argv[]) {
     int width, height;
     int max_value; /* max value of a pixel */
 
+    clock_t end;
+    clock_t begin = clock();
+
     printf("Reading from file...\n");
     load_file(argc, argv);
     read_from_file(magic_number, &width, &height, &max_value);
@@ -199,6 +204,9 @@ int main(int argc, char *argv[]) {
 
     free(pixels);
     free(mask);
+
+    end = clock();
+    printf("Time elapsed: %.3f seconds\n", (double)(end - begin) / CLOCKS_PER_SEC);
 
     return EXIT_SUCCESS;
 }

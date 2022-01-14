@@ -43,20 +43,20 @@ int get_lowest_not_black_value(const int *array, int n) {
     /* Sanity check */
     if (!array) {
         sanity_check("get_lowest_not_black_value");
-        exit(0);
+        exit(EXIT_FAILURE);
     }
 
     /* get first not black value */
-    for (i = 0; i < n; i++) {
-        if (array[i] != 0) {
+    for (i = CYCLE_START; i < n; i++) {
+        if (array[i] != BLACK) {
             lowest = array[i];
             break;
         }
     }
 
-    /* getting lowest value in the array except of 0 */
+    /* getting the lowest value in the array except of 0 */
     for (; i < n; i++) {
-        if (array[i] != 0){
+        if (array[i] != BLACK){
             if (array[i] < lowest) {
                 lowest = array[i];
             }
@@ -80,12 +80,12 @@ int get_highest(const int *array, int n) {
     /* Sanity check */
     if (!array) {
         sanity_check("get_highest");
-        exit(0);
+        exit(EXIT_FAILURE);
     }
 
     /* getting highest value */
-    highest = array[0];
-    for (i = 1; i < n; i++) {
+    highest = array[FIRST_INDEX];
+    for (i = FIRST_INDEX; i < n; i++) {
         if (array[i] > highest) {
             highest = array[i];
         }
@@ -107,12 +107,12 @@ int is_all_black(const int *array, int n) {
     /* Sanity check */
     if (!array) {
         sanity_check("is_all_black");
-        exit(0);
+        exit(EXIT_FAILURE);
     }
 
     /* if at least one pixel is not black return 0 */
-    for (i = 0; i < n; i++) {
-        if (array[i] > 0) {
+    for (i = CYCLE_START; i < n; i++) {
+        if (array[i] > BLACK) {
             return FAILURE;
         }
     }
@@ -131,7 +131,7 @@ int is_all_black(const int *array, int n) {
  * @param mask array of labels
  */
 void first_pixel_value(int x, int y, node **head, int *value, int *mask) {
-    int n = 2;
+    int n = NUMBER_OF_NEIGHBOHRS_FIRST_COLUMN;
     int output;
     int *array;
     int highest;
@@ -139,14 +139,14 @@ void first_pixel_value(int x, int y, node **head, int *value, int *mask) {
     /* Sanity check */
     if (!mask || !head || !value) {
         sanity_check("first_pixel_value");
-        exit(0);
+        exit(EXIT_FAILURE);
     }
 
     array = (int *) malloc(n * sizeof(int));
 
     if (!array) {
         printf("Malloc failed in first_pixel_value.\n");
-        exit(0);
+        exit(EXIT_FAILURE);
     }
 
     /* assign every neighboring pixel that has to be examined */
@@ -157,13 +157,13 @@ void first_pixel_value(int x, int y, node **head, int *value, int *mask) {
 
     /* if all pixels are black */
     if (is_all_black(array, n)) {
-        output = 0;
+        output = BLACK;
     } else {
         output = get_lowest_not_black_value(array, n);
     }
 
     /* if all pixels are black add node */
-    if (output == 0) {
+    if (output == BLACK) {
         add_node(head, value);
         mask[get_index(x, y)] = *value;
     }
@@ -189,7 +189,7 @@ void first_pixel_value(int x, int y, node **head, int *value, int *mask) {
  * @param mask array of labels
  */
 void middle_pixel_value(int x, int y, node **head, int *value, int *mask) {
-    int n = 4;
+    int n = NUMBER_OF_NEIGHBOHRS_MIDDLE_COLUMN;
     int output;
     int *array;
     int highest;
@@ -197,14 +197,14 @@ void middle_pixel_value(int x, int y, node **head, int *value, int *mask) {
     /* Sanity check */
     if (!mask || !head || !value) {
         sanity_check("middle_pixel_value");
-        exit(0);
+        exit(EXIT_FAILURE);
     }
 
     array = (int *) malloc(n * sizeof(int));
 
     if (!array) {
         printf("Malloc failed in middle_pixel_value.\n");
-        exit(0);
+        exit(EXIT_FAILURE);
     }
 
 
@@ -220,13 +220,13 @@ void middle_pixel_value(int x, int y, node **head, int *value, int *mask) {
 
     /* if all pixels are black */
     if (is_all_black(array, n)) {
-        output = 0;
+        output = BLACK;
     } else {
         output = get_lowest_not_black_value(array, n);
     }
 
     /* if all pixels are black add node */
-    if (output == 0) {
+    if (output == BLACK) {
         add_node(head, value);
         mask[get_index(x, y)] = *value;
     }
@@ -252,7 +252,7 @@ void middle_pixel_value(int x, int y, node **head, int *value, int *mask) {
  * @param mask array of labels
  */
 void last_pixel_value(int x, int y, node **head, int *value, int *mask) {
-    int n = 3;
+    int n = NUMBER_OF_NEIGHBOHRS_LAST_COLUMN;
     int output;
     int *array;
     int highest;
@@ -260,14 +260,14 @@ void last_pixel_value(int x, int y, node **head, int *value, int *mask) {
     /* Sanity check */
     if (!mask || !head || !value) {
         sanity_check("last_pixel_value");
-        exit(0);
+        exit(EXIT_FAILURE);
     }
 
     array = (int *) malloc(n * sizeof(int));
 
     if (!array) {
         printf("Malloc failed in last_pixel_value.\n");
-        exit(0);
+        exit(EXIT_FAILURE);
     }
 
     /* assign every neighboring pixel that we have to examine */
@@ -280,13 +280,13 @@ void last_pixel_value(int x, int y, node **head, int *value, int *mask) {
 
     /* if all pixels are black */
     if (is_all_black(array, n)) {
-        output = 0;
+        output = BLACK;
     } else {
         output = get_lowest_not_black_value(array, n);
     }
 
     /* if all pixels are black add node */
-    if (output == 0) {
+    if (output == BLACK) {
         add_node(head, value);
         mask[get_index(x, y)] = *value;
     }
@@ -317,23 +317,23 @@ void first_line(const uchar *pixels, node **head, int *value, int *mask) {
     /* no need to check node *head here, it should be NULL here, because it is an empty linked list */
     if (!pixels || !value || !head) {
         sanity_check("first_line");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     /* for the first pixel only compare if it is white or black */
     /* if white then assign a new value */
-    if (pixels[0] > 0) {
+    if (pixels[FIRST_INDEX] > BLACK) {
         add_node(head, value);
-        mask[0] = *value;
+        mask[FIRST_INDEX] = *value;
     } else {
-        mask[0] = 0;
+        mask[FIRST_INDEX] = BLACK;
     }
 
     /* rest of the first line */
     /* only checking pixels on the left */
     for (j = 1; j < width; j++) {
-        if (pixels[j] != 0) {
-            if (mask[j-1] == 0) {
+        if (pixels[j] != BLACK) {
+            if (mask[j-1] == BLACK) {
                 add_node(head, value);
                 mask[j] = *value;
             } else {
@@ -358,37 +358,37 @@ void first_walk_through(uchar *pixels, node **head, int *mask) {
     /* no need to check node *head here, it should be NULL here, because it is an empty linked list */
     if (!pixels) {
         sanity_check("first_walk_through");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     value = (int *) malloc(sizeof(int));
 
     if (!value) {
         malloc_fail("first_walk_through");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
-    *value = 0;
+    *value = FIRST_INDEX;
 
     first_line(pixels, head, value, mask);
 
     /* starting on i = 1 because first line is done */
-    for (i = 1; i < height; i++) {
+    for (i = CYCLE_START + 1; i < height; i++) {
         /* check first pixel in the row */
-        /* if pixel is black, dont check */
-        if (pixels[get_index(0, i)] != 0) {
-            first_pixel_value(0, i, head, value, mask);
+        /* if pixel is black, don't check */
+        if (pixels[get_index(FIRST_INDEX, i)] != BLACK) {
+            first_pixel_value(FIRST_INDEX, i, head, value, mask);
         }
 
         /* middle pixels */
-        for (j = 1; j < width - 1; j++) {
-            if (pixels[get_index(j, i)] != 0) {
+        for (j = CYCLE_START + 1; j < width - 1; j++) {
+            if (pixels[get_index(j, i)] != BLACK) {
                 middle_pixel_value(j, i, head, value, mask);
             }
         }
 
         /* last pixels */
-        if (pixels[get_index(width-1, i)] != 0) {
+        if (pixels[get_index(width-1, i)] != BLACK) {
             last_pixel_value(width-1, i, head, value, mask);
         }
     }
@@ -417,14 +417,16 @@ void second_walk_through(node **head, int *mask) {
     /* Sanity check */
     if (!mask || !head) {
         sanity_check("second_walk_through");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
+    set_best_equivalence(*head);
+
     /* cycle where the fix is done */
-    for (i = 0; i < height; i++) {
-        for (j = 0; j < width; j++) {
+    for (i = FIRST_INDEX; i < height; i++) {
+        for (j = FIRST_INDEX; j < width; j++) {
             if (mask[get_index(j, i)]) {
-                mask[get_index(j, i)] = get_equivalence(get_node(*head, mask[get_index(j, i)]));
+                mask[get_index(j, i)] = get_node(*head, mask[get_index(j, i)])->best_equivalence;
             }
         }
     }
@@ -447,14 +449,15 @@ void paint_mask(colour_node *head, int *mask) {
     /* Sanity check */
     if (!mask || !head) {
         sanity_check("paint_mask");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     for (i = 0; i < height; i++) {
         for (j = 0; j < width; j++) {
             /* if not black */
-            if (mask[get_index(j, i)] != 0) {
-                mask[get_index(j, i)] = get_colour(head, mask[get_index(j, i)]); /* assign colour from colour linked list to mask */
+            if (mask[get_index(j, i)] != BLACK) {
+                /* assign colour from colour linked list to mask */
+                mask[get_index(j, i)] = get_colour(head, mask[get_index(j, i)]);
             }
         }
     }
@@ -470,20 +473,20 @@ void paint_mask(colour_node *head, int *mask) {
 void paint(node **head, int max_value, int *mask) {
     colour_node *colours;
     node *walk;
-    int num_of_colours = 0;
+    int num_of_colours = FIRST_INDEX;
 
     /* Sanity check */
     if (!mask || !head) {
         sanity_check("paint");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     colours = NULL;
 
-    /* adds colours into the colour linked list and counts how many colours there are */
+    /* adding colours into the colour linked list and counts how many colours there are */
     walk = *head;
     while (walk) {
-        if (walk->value == get_equivalence(walk)) {
+        if (walk->value == walk->best_equivalence) {
             num_of_colours++;
             add_colour_node(&colours, walk->value);
         }
@@ -513,7 +516,7 @@ void run(int **mask, uchar *pixels, int width_ref, int height_ref, int max_value
     /* Sanity check */
     if (!pixels) {
         sanity_check("run");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     width = width_ref;
@@ -523,7 +526,7 @@ void run(int **mask, uchar *pixels, int width_ref, int height_ref, int max_value
 
     if (!*mask) {
         malloc_fail("run");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     printf("First walk through...\n");

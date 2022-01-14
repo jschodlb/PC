@@ -12,13 +12,12 @@
  * @param label label saved into the node for identification
  */
 void add_colour_node(colour_node **head, int label) {
-    colour_node *last; /* used for the last colour_node */
-    colour_node *new_colour_node; /* new colour_node added to the end of the list */
+    colour_node *new_colour_node; /* new colour_node added to the list */
 
     /* sanity check for head reference */
     if (!head) {
         sanity_check("add_colour_node");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     /* allocate memory for the new colour_node */
@@ -26,7 +25,7 @@ void add_colour_node(colour_node **head, int label) {
     /* if malloc fails */
     if (!new_colour_node) {
         malloc_fail("add_colour_node");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     new_colour_node->label = label; /* label used to identify the node */
@@ -39,14 +38,9 @@ void add_colour_node(colour_node **head, int label) {
         return;
     }
 
-    /* if the linked list is not empty, we from head to the last colour_node */
-    last = *head;
-    while (last->next != NULL) {
-        last = last->next;
-    }
-
-    /* we add new colour_node next to last colour_node */
-    last->next = new_colour_node;
+    /* adding node to the start of the linked list */
+    new_colour_node->next = *head;
+    *head = new_colour_node;
 }
 
 /**
@@ -57,12 +51,12 @@ void add_colour_node(colour_node **head, int label) {
  * @return colour value or FAILURE
  */
 int get_colour(colour_node *head, int label) {
-    colour_node* walk;
+    colour_node *walk;
 
     /* Sanity check */
     if (!head) {
         sanity_check("get_node");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     /* walks through colour list,
@@ -75,6 +69,8 @@ int get_colour(colour_node *head, int label) {
         }
         walk = walk->next;
     }
+
+    printf("get_colour: Label not found!\n");
 
     return FAILURE;
 }
@@ -95,14 +91,14 @@ void set_colours(colour_node *head, int unique_colours, int max_value) {
     /* Sanity check */
     if (!head) {
         sanity_check("set_colours");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     /* distance between 2 numbers */
     interval = max_value / unique_colours;
 
     /* assigns colours to individual nodes */
-    index = 0;
+    index = FIRST_INDEX;
     walk = head;
     while (walk) {
         index++;
@@ -122,7 +118,7 @@ void print_colour_list(colour_node *head) {
     /* Sanity check */
     if (!head) {
         sanity_check("print_colour_list");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     walk = head;
