@@ -177,6 +177,8 @@ void write_into_file(char *argv[], int *mask, char *magic_number, int width, int
     }
 
     fclose(file);
+
+    free(file_name);
 }
 
 /**
