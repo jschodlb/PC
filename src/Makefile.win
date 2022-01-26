@@ -1,0 +1,9 @@
+BIN = ccl.exe
+OBJ = error.obj linked_list.obj colour_linked_list.obj main.obj ccl.obj
+
+.c.obj:
+	cl $< /c
+
+$(BIN): $(OBJ)
+	cl $(OBJ) /Fe$(BIN)
+
